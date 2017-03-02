@@ -20,7 +20,7 @@ function usage() {
 Check .gitlab-ci.yml syntax using Gitlab API.
 
 Usage:
- ${0##*/} [--help|--install--uninstall]
+ ${0##*/} [--help|--install|--uninstall]
 
   -h, --help      : show this help
   -i, --install   : install as git pre-commit hook for the current repository

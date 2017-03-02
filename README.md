@@ -79,7 +79,7 @@ existing pre-commit script.
 Check .gitlab-ci.yml syntax using Gitlab API.
 
 Usage:
- lint-gitlab-ci.sh [--help|--install--uninstall]
+ lint-gitlab-ci.sh [--help|--install|--uninstall]
 
   -h, --help      : show this help
   -i, --install   : install as git pre-commit hook for the current repository
