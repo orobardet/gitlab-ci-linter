@@ -3,11 +3,11 @@
 > Goodbye "yaml invalid" pipeline errors, and don't come back!
 
 This script use the [Gitlab API](https://docs.gitlab.com/ce/api/ci/lint.html) to validate your local `.gitlab-ci.yml`.  
-It can be installed as a git pre-commit hook, preventing commit (and so push) of a invalid `.gitlab-ci.yml`. 
+It can be installed as a git pre-commit hook, preventing commit (and so push) of an invalid `.gitlab-ci.yml`. 
 
 # Installation
 
-Just download the [lint-gitlab-ci.sh](lint-gitlab-ci.sh) and put it somewhere in your `$PATH`, as a executable.
+Just download the [lint-gitlab-ci.sh](lint-gitlab-ci.sh) and put it somewhere in your `$PATH`, as an executable.
 
 ``` 
 curl "https://gitlab.com/orobardet/gitlab-ci-linter/raw/master/lint-gitlab-ci.sh" -o /in/the/PATH/lint-gitlab-ci.sh
