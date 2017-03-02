@@ -60,7 +60,7 @@ The script can install (and uninstall) itself as a pre-commit hook, using the op
 
 The self installation is pretty simple: it will just made create a `.git/hooks/pre-commit` file as a symbolic link to itself.
 
-It will be able to self install if a `.git/hooks/pre-commit` already exists (and is not a link to itself).
+It won't be able to self install if a `.git/hooks/pre-commit` already exists (and is not a link to itself).
  
 Self uninstall will only works if `.git/hooks/pre-commit` is a link to itself.
 
