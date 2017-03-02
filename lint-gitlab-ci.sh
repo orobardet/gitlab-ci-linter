@@ -2,7 +2,6 @@
 
 # v1.0
 
-
 GITLAB_CI_YML_PATH=${GITLAB_CI_YML_PATH:=.gitlab-ci.yml}
 GITLAB_API_PATH_CI_LINT=${GITLAB_API_PATH_CI_LINT:=/api/v3/ci/lint}
 
