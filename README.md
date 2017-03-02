@@ -52,13 +52,17 @@ If the `.gitlab-ci.yml` is invalid:
 
 ## As git pre-commit hook
 
-The script can be used as a git pre-commit hook. It means it will be run by git automatically each time you aske for a 
-commit, and git will stop if you `.gitlab-ci.yml` is invalid:
+The script can be used as a git pre-commit hook. It means it will be run by git automatically each time you ask for a 
+commit, and git will stop if your `.gitlab-ci.yml` is invalid:
 ![Thanks alerting me!](doc/screen-hook-ko.png)
 
 The script can install (and uninstall) itself as a pre-commit hook, using the options `--install|-i` and `--uninstall|-u`.
 
-The self installation is pretty simple: it will just made create a `.git/hooks/pre-commit` file as a symbolic link to itself.
+The self installation is pretty simple: it will just create a `.git/hooks/pre-commit` file as a symbolic link to itself.
+
+> It means updating the script to a newer version will update all the hooks installed in all your repo => Good!
+> But moving the script will broke commit in these repo until you manually remove the hook and reinstall it => Not so good...
+> Conclusion: install the script in a safe and viable place :)
 
 It won't be able to self install if a `.git/hooks/pre-commit` already exists (and is not a link to itself).
  
