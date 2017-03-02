@@ -3,7 +3,7 @@
 This script use the [Gitlab API](https://docs.gitlab.com/ce/api/ci/lint.html) to validate your local `.gitlab-ci.yml`.  
 It can be installed as a git pre-commit hook, preventing commit (and so push) of a invalid `.gitlab-ci.yml`. 
 
-> Good by "yaml invalid" pipeline errors, and don't come back!
+> Goodbye "yaml invalid" pipeline errors, and don't come back!
  
 # Usage
 
@@ -23,7 +23,6 @@ You don't need to be in the root of the git repository:
 ```shell
 cd ~/dev/my-super-project/src/public
 ~/dev/my-super-project`
-
 ```
 If the `.gitlab-ci.yml` is invalid:
 ![Arg! An error!](doc/screen-standalone-ko.png)
