@@ -1,13 +1,36 @@
 # Gitlab-ci.yml linter script
 
+> Goodbye "yaml invalid" pipeline errors, and don't come back!
+
 This script use the [Gitlab API](https://docs.gitlab.com/ce/api/ci/lint.html) to validate your local `.gitlab-ci.yml`.  
 It can be installed as a git pre-commit hook, preventing commit (and so push) of a invalid `.gitlab-ci.yml`. 
 
-> Goodbye "yaml invalid" pipeline errors, and don't come back!
- 
+# Installation
+
+Just download the [lint-gitlab-ci.sh](lint-gitlab-ci.sh) and put it somewhere in your `$PATH`, as a executable.
+
+``` 
+curl "https://gitlab.com/orobardet/gitlab-ci-linter/raw/master/lint-gitlab-ci.sh" -o /in/the/PATH/lint-gitlab-ci.sh
+chmod a+x /in/the/PATH/lint-gitlab-ci.sh
+```
+
+Done. At least if you already meet the requirements below:
+
+## Requirement
+
+- bash 4.x
+- [jq](https://stedolan.github.io/jq/)
+- curl
+- Some very common Unix command (sed, ls, mkdir, ...) 
+- And git client, of course
+
+Most of these tools already available in most Linux distribution and other Unix-like.  
+[jq](https://stedolan.github.io/jq/) package is available in major distibutions, and for other it only consist of a single 
+ binary that is available on its website (linux, windows, osx, freebsd, solaris,...)
+
 # Usage
 
-Once installed (described below), it can be used as a simple standalone script, by launching it from any directory 
+Once installed, it can be used as a simple standalone script, by launching it from any directory 
 inside a git repository clone.
 
 Let's say you have a Gitlab project cloned in `~/dev/my-super-project`:
@@ -77,26 +100,3 @@ Manual installation only require to add a call to the current script in your exi
 to uninstall it manually.
 ```
 
-# Installation
-
-Just download the [lint-gitlab-ci.sh](lint-gitlab-ci.sh) and put it somewhere in your `$PATH`, as a executable.
-
-``` 
-curl "" -o /in/the/PATH/lint-gitlab-ci.sh
-chmod a+x /in/the/PATH/lint-gitlab-ci.sh
-```
-
-Done. At least if you already meet the requirements below:
-
-## Requirement
-
-- bash 4.x
-- [jq](https://stedolan.github.io/jq/)
-- curl
-- Some very common Unix command (sed, ls, mkdir, ...) 
-- And git client, of course
-
-Most of these tools already available in most Linux distribution and other Unix-like.  
-[jq](https://stedolan.github.io/jq/) package is available in major distibutions, and for other it only consist of a single 
- binary that is available on its website (linux, windows, osx, freebsd, solaris,...)
- 
