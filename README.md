@@ -60,8 +60,8 @@ The script can install (and uninstall) itself as a pre-commit hook, using the op
 
 The self installation is pretty simple: it will just create a `.git/hooks/pre-commit` file as a symbolic link to itself.
 
-> It means updating the script to a newer version will update all the hooks installed in all your repo => Good!
-> But moving the script will broke commit in these repo until you manually remove the hook and reinstall it => Not so good...
+> It means updating the script to a newer version will update all the hooks installed in all your repo => Good!  
+> But moving the script will broke commit in these repo until you manually remove the hook and reinstall it => Not so good...  
 > Conclusion: install the script in a safe and viable place :)
 
 It won't be able to self install if a `.git/hooks/pre-commit` already exists (and is not a link to itself).
