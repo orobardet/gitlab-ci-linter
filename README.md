@@ -100,3 +100,6 @@ Manual installation only require to add a call to the current script in your exi
 to uninstall it manually.
 ```
 
+# Contributing/enhancement
+
+It's a quick&dirty script made to fit my needs at work. There is a lot of room to improvement, so feel free to propose MR.
