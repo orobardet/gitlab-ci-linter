@@ -7,7 +7,8 @@ It can be installed as a git pre-commit hook, preventing commit (and so push) of
 
 # Installation
 
-Just download the [lint-gitlab-ci.sh](lint-gitlab-ci.sh) and put it somewhere in your `$PATH`, as an executable.
+Just download the [lint-gitlab-ci.sh](lint-gitlab-ci.sh) and put it somewhere in your `$PATH`, as an executable.  
+And that's all. At least if you already meet the requirements below.
 
 Quick install for Debian-like distribution, including requirements installation:
 ``` 
@@ -15,8 +16,6 @@ sudo apt-get install curl git jq
 sudo curl "https://gitlab.com/orobardet/gitlab-ci-linter/raw/master/lint-gitlab-ci.sh" -o /usr/local/bin/lint-gitlab-ci.sh
 sudo chmod a+x /usr/local/bin/lint-gitlab-ci.sh
 ```
-
-Done. At least if you already meet the requirements below:
 
 ## Requirement
 
