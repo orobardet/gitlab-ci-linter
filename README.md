@@ -28,6 +28,11 @@ Most of these tools already available in most Linux distribution and other Unix-
 [jq](https://stedolan.github.io/jq/) package is available in major distibutions, and for other it only consist of a single 
  binary that is available on its website (linux, windows, osx, freebsd, solaris,...)
 
+For Debian-like distributions:
+```shell
+sudo apt-get install curl git jq
+```
+
 # Usage
 
 Once installed, it can be used as a simple standalone script, by launching it from any directory 
