@@ -45,23 +45,24 @@ Let's say you have a Gitlab project cloned in `~/dev/my-super-project`:
 
 ```shell
 cd ~/dev/my-super-project
-~/dev/my-super-project`
 ```
 If the `.gitlab-ci.yml` is valid:
+
 ![.gitlab-ci.yml is valid!](doc/screen-standalone-ok.png)
 
 You don't need to be in the root of the git repository:
 ```shell
 cd ~/dev/my-super-project/src/public
-~/dev/my-super-project`
 ```
 If the `.gitlab-ci.yml` is invalid:
+
 ![Arg! An error!](doc/screen-standalone-ko.png)
 
 ## As git pre-commit hook
 
 The script can be used as a git pre-commit hook. It means it will be run by git automatically each time you ask for a 
 commit, and git will stop if your `.gitlab-ci.yml` is invalid:
+
 ![Thanks alerting me!](doc/screen-hook-ko.png)
 
 The script can install (and uninstall) itself as a pre-commit hook, using the options `--install|-i` and `--uninstall|-u`.
@@ -83,7 +84,7 @@ existing pre-commit script.
 
 - If no `.gitlab-ci.yml` is detected in the git repository root, the script does noting (if installed as pre-commit hook, it will not prevent the commit).
 - The script works (or should) with any instance of Gitlab: gitlab.com or custom instance.
-- It uses the url of the remote `origin` to guess the url of the Gitlab to use
+- It uses the url of the remote `origin` to guess the url of the Gitlab to use (also works if the remote is ssh, as soon as the Gitlab respond on HTTP using the same FQDN as ssh)
 
 ## --help 
 
