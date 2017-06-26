@@ -5,6 +5,8 @@
 This script use the [Gitlab API](https://docs.gitlab.com/ce/api/ci/lint.html) to validate your local `.gitlab-ci.yml`.  
 It can be installed as a git pre-commit hook, preventing commit (and so push) of an invalid `.gitlab-ci.yml`. 
 
+**The script itself does not lint anything: it uses the lint API of a Gitlab instance => it needs to be run somewhere with an access to the Gitlab instance where your project come from.**
+
 # Installation
 
 Just download the [lint-gitlab-ci.sh](lint-gitlab-ci.sh) and put it somewhere in your `$PATH`, as an executable.  
