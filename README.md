@@ -22,10 +22,10 @@ sudo chmod a+x /usr/local/bin/lint-gitlab-ci.sh
 ## Requirement
 
 - bash 4.x
-- [jq](https://stedolan.github.io/jq/)
+- [jq](https://stedolan.github.io/jq/) **>=1.5**
 - curl
 - Some very common Unix command (sed, ls, mkdir, ...) 
-- And git client, of course
+- And git client, of course, **in v2+**
 
 Most of these tools already available in most Linux distribution and other Unix-like.  
 [jq](https://stedolan.github.io/jq/) package is available in major distibutions, and for other it only consist of a single 
