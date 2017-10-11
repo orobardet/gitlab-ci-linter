@@ -5,11 +5,14 @@
 GITLAB_CI_YML_PATH=${GITLAB_CI_YML_PATH:=.gitlab-ci.yml}
 GITLAB_API_PATH_CI_LINT=${GITLAB_API_PATH_CI_LINT:=/api/v4/ci/lint}
 
-RESC="\\033[0;0m"
-C_F_CYAN="\\033[1;36m"
-C_F_RED="\\033[1;31m"
-C_F_GREEN="\\033[1;32m"
-C_F_YELLOW="\\033[1;33m"
+ncolors=$(tput colors)
+if test -n "$ncolors" && test $ncolors -ge 8; then
+    RESC="\\033[0;0m"
+    C_F_CYAN="\\033[1;36m"
+    C_F_RED="\\033[1;31m"
+    C_F_GREEN="\\033[1;32m"
+    C_F_YELLOW="\\033[1;33m"
+fi
 
 GITLAB_LINTER_ERROR=""
 SCRIPTPATH=$(cd $(dirname $0) ; pwd)/${0##*/}
