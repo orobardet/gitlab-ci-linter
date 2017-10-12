@@ -116,3 +116,11 @@ to uninstall it manually.
 # Contributing/enhancement
 
 It's a quick&dirty script made to fit my needs at work. There is a lot of room to improvement, so feel free to propose MR.
+
+# Development
+
+## Compilation
+
+```shell
+go build -i -o ./.build/lint-gitlab-ci -ldflags "-X version.VERSION=2.0.0" gitlab.com/orobardet/gitlab-ci-linter
+```

@@ -1,1 +1,4 @@
-/.idea/
+# don't commit binaries
+/gitlab-ci-linter
+/lint-gitlab-ci
+.build/
