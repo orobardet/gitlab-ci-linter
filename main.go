@@ -13,7 +13,7 @@ var BUILD_TIME = ""
 
 func main() {
 	cli.VersionPrinter = func(c *cli.Context) {
-		fmt.Printf("version=%s revision=%s build=%s\n", VERSION, REVISION, BUILD_TIME)
+		fmt.Printf("version=%s revision=%s built on=%s\n", VERSION, REVISION, BUILD_TIME)
 	}
 
 	app := cli.NewApp()
