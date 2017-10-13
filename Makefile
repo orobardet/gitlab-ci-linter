@@ -36,7 +36,7 @@ BUILD_TIME?=$(shell date +%FT%T%z)
 
 
 LDFLAGS=--X main.VERSION=${VERSION} -X main.REVISION=${REVISION} -X main.BUILD_TIME=${BUILD_TIME}
-SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
+SOURCES := $(shell find $(SOURCEDIR) -path $(SOURCEDIR)/vendor -prune -o -name '*.go')
 
 .DEFAULT_GOAL: all
 

@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/urfave/cli"
+	"gopkg.in/src-d/go-git.v4"
+	. "gopkg.in/src-d/go-git.v4/examples"
 	"math"
 	"os"
 )
@@ -36,6 +38,15 @@ func main() {
 	}
 	app.Action = func(c *cli.Context) error {
 		fmt.Println("Lint the ci")
+
+		r, err := git.NewFilesystemRepository(".git")
+		CheckIfError(err)
+
+		remote, err := r.Remote("origin")
+		CheckIfError(err)
+
+		fmt.Printf("origin: %s", remote.Config().URL)
+
 		return nil
 	}
 
