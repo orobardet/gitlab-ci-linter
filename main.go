@@ -22,7 +22,7 @@ func main() {
 	app.Name = "gitlab-ci-linter"
 	app.Version = fmt.Sprintf("%s (%s)", VERSION, REVISION[:int(math.Min(float64(len(REVISION)), 7))])
 	app.Usage = "lint your .gitlab-ci.yml using the Gitlab lint API"
-
+	app.EnableBashCompletion = true
 	app.Commands = []cli.Command{
 		{
 			Name: "version",
