@@ -14,17 +14,25 @@ BINARY?=.build/lint-gitlab-ci
 
 # Use the environnement variable to pass arguments to the program when using `make run`
 # e.g.:
-# `RUNARGS="--help install" make run`
+# `RUNARGS="-version" make run`
+# or
+# `make run version`
 # will run (after building if necessary):
-# `$(BINARY) --help install`
-RUNARGS?=
+# `$(BINARY) version`
+# If the first argument is "run"...
+ifeq (run,$(firstword $(MAKECMDGOALS)))
+  # use the rest as arguments for "run"
+  RUNARGS?=$(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  # ...and turn them into do-nothing targets
+  $(eval $(RUNARGS):;@:)
+endif
 
 # Version number to use when building the program
 VERSION?=$(shell git describe --tags --always --match=v* 2> /dev/null || cat ${SOURCEDIR}/VERSION 2> /dev/null || echo v0.0.0)-dev
 # Revision or VCS hash to use when building the program. Can be long, it may be truncated by the program at
 REVISION?=$(shell git rev-parse HEAD)
 # Build date&time to use when building the programme. Unlikely needed to be overriden.
-BUILD_TIME?=`date +%FT%T%z`
+BUILD_TIME?=$(shell date +%FT%T%z)
 
 
 LDFLAGS=--X main.VERSION=${VERSION} -X main.REVISION=${REVISION} -X main.BUILD_TIME=${BUILD_TIME}
@@ -39,6 +47,7 @@ build: $(BINARY)
 
 rebuild: clean build
 
+.PHONY: run
 run: $(BINARY)
 	$(BINARY) $(RUNARGS)
 

@@ -35,7 +35,7 @@ func main() {
 		},
 	}
 	app.Action = func(c *cli.Context) error {
-		fmt.Printf("Lint the ci")
+		fmt.Println("Lint the ci")
 		return nil
 	}
 
