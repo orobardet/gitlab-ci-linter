@@ -5,9 +5,13 @@ import (
 	"fmt"
 	"github.com/go-ini/ini"
 	"github.com/urfave/cli"
+	"io/ioutil"
 	"math"
+	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 )
 
 // Version of the program
@@ -30,6 +34,9 @@ const gitlabCiFileName = ".gitlab-ci.yml"
 
 // Default Gitlab instance URL to use
 const defaultGitlabRootUrl = "https://gitlab.com"
+
+// Path of the Gitlab CI lint API, to be used on the root url
+const gitlabApiCiLintPath = "/api/v4/ci/lint"
 
 // The Gitlab instance root URL to use.
 var gitlabRootUrl string
@@ -86,6 +93,7 @@ func findGitlabCiFile(directory string) (string, error) {
 	}
 }
 
+// Extract the orign remote remote url from a git repo directory
 func getGitOriginRemoteUrl(gitDirectory string) (string, error) {
 	cfg, err := ini.Load(gitDirectory + string(filepath.Separator) + gitRepoConfigFilename)
 
@@ -100,6 +108,38 @@ func getGitOriginRemoteUrl(gitDirectory string) (string, error) {
 	}
 
 	return "", nil
+}
+
+// Transform a git remote url, that can be a full http ou ssh url, to a simple http FQDN host
+func httpiseRemoteUrl(remoteUrl string) string {
+	re := regexp.MustCompile("^(https?://[^/]*).*$")
+	if re.MatchString(remoteUrl) { // http remote
+		matches := re.FindStringSubmatch(remoteUrl)
+		if len(matches) >= 2 {
+			return matches[1]
+		}
+	} else { // ssh remote
+		re = regexp.MustCompile("^([^@]*@)?([^:]+)")
+		matches := re.FindStringSubmatch(remoteUrl)
+		if len(matches) >= 3 {
+			return "http://" + matches[2]
+		}
+	}
+
+	return ""
+}
+
+func checkGitlabAPIUrl(rootUrl string) bool {
+	resp, err := http.Post(rootUrl+gitlabApiCiLintPath, "application/json", strings.NewReader(`{"content": "{ \"image\": \"ruby:2.1\", \"services\": [\"postgres\"], \"before_script\": [\"gem install bundler\", \"bundle install\", \"bundle exec rake db:create\"], \"variables\": {\"DB_NAME\": \"postgres\"}, \"types\": [\"test\", \"deploy\", \"notify\"], \"rspec\": { \"script\": \"rake spec\", \"tags\": [\"ruby\", \"postgres\"], \"only\": [\"branches\"]}}"}`))
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	fmt.Printf("%s\n", body)
+
+	return false
 }
 
 // 'check' command of the program, which is the main action
@@ -146,9 +186,12 @@ func commandCheck(c *cli.Context) error {
 	if gitRepoPath != "" {
 		remoteUrl, err := getGitOriginRemoteUrl(gitRepoPath)
 		if err == nil {
-			fmt.Printf("Remote url found: %s", remoteUrl)
+			httpRemoteUrl := httpiseRemoteUrl(remoteUrl)
+			if httpRemoteUrl != "" && checkGitlabAPIUrl(httpRemoteUrl) {
+				fmt.Printf("API url found: %s", httpRemoteUrl)
+				gitlabRootUrl = httpRemoteUrl
+			}
 		}
-
 	}
 
 	// Call the API to validate the gitlab-ci file
