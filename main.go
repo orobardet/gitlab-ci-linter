@@ -129,7 +129,7 @@ func httpiseRemoteUrl(remoteUrl string) string {
 	return ""
 }
 
-func checkGitlabAPIUrl(rootUrl string) bool {
+func requestGitlabAPILint(rootUrl string) bool {
 	resp, err := http.Post(rootUrl+gitlabApiCiLintPath, "application/json", strings.NewReader(`{"content": "{ \"image\": \"ruby:2.1\", \"services\": [\"postgres\"], \"before_script\": [\"gem install bundler\", \"bundle install\", \"bundle exec rake db:create\"], \"variables\": {\"DB_NAME\": \"postgres\"}, \"types\": [\"test\", \"deploy\", \"notify\"], \"rspec\": { \"script\": \"rake spec\", \"tags\": [\"ruby\", \"postgres\"], \"only\": [\"branches\"]}}"}`))
 	if err != nil {
 		return false
@@ -174,7 +174,7 @@ func commandCheck(c *cli.Context) error {
 		remoteUrl, err := getGitOriginRemoteUrl(gitRepoPath)
 		if err == nil {
 			httpRemoteUrl := httpiseRemoteUrl(remoteUrl)
-			if httpRemoteUrl != "" && checkGitlabAPIUrl(httpRemoteUrl) {
+			if httpRemoteUrl != "" {
 				fmt.Printf("API url found: %s", httpRemoteUrl)
 				gitlabRootUrl = httpRemoteUrl
 			}
