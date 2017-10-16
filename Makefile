@@ -10,7 +10,7 @@
 SOURCEDIR=.
 
 # Output path and name of the program binary result
-BINARY?=.build/lint-gitlab-ci
+BINARY?=.build/gitlab-ci-linter
 
 # Use the environnement variable to pass arguments to the program when using `make run`
 # e.g.:
