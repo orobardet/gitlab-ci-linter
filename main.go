@@ -151,19 +151,6 @@ func checkGitlabAPIUrl(rootUrl string) bool {
 // Finally, it call the API with the gitlab-ci file content. If the content if syntax valid, it silently stop. Else it
 // display the error messages returned by the API and exit with an error
 func commandCheck(c *cli.Context) error {
-	directoryRoot, _ = filepath.Abs(directoryRoot)
-
-	// Check if the given gitlab-ci file path exists
-	if gitlabCiFilePath != "" {
-		fileInfo, err := os.Stat(gitlabCiFilePath)
-		if os.IsNotExist(err) {
-			cli.NewExitError(fmt.Sprintf("'%s' does not exists", gitlabCiFilePath), 1)
-		}
-		if fileInfo.IsDir() {
-			cli.NewExitError(fmt.Sprintf("'%s' is a directory, not a file", gitlabCiFilePath), 1)
-		}
-	}
-
 	// Find gitlab-ci file, if not given
 	if gitlabCiFilePath == "" {
 		file, err := findGitlabCiFile(directoryRoot)
@@ -209,13 +196,17 @@ version {{if .Version}}{{.Version}}{{end}}
 {{if len .Authors}}{{range .Authors}}{{ . }}{{end}}{{end}} - https://gitlab.com/orobardet/gitlab-ci-linter
 
 Usage:
-   {{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}
+   {{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} [command [command options]]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}
 
 {{if .VisibleFlags}}Global options:
    {{range .VisibleFlags}}{{.}}
    {{end}}{{end}}
+{{if .Description}}Arguments:
+   {{.Description}}{{end}}
+
 {{if .Commands}}Commands:
-{{range .Commands}}{{if not .HideHelp}}   {{join .Names ", "}}{{ "\t"}}{{.Usage}}{{ "\n" }}{{end}}{{end}}{{end}}`
+{{range .Commands}}{{if not .HideHelp}}   {{join .Names ", "}}{{ "\t"}}{{.Usage}}{{ "\n" }}{{end}}{{end}}
+   If no command is given, 'check 'is used by default{{end}}`
 
 	app := cli.NewApp()
 	app.Name = "gitlab-ci-linter"
@@ -226,11 +217,18 @@ Usage:
 	app.Usage = "lint your .gitlab-ci.yml using the Gitlab lint API"
 	app.EnableBashCompletion = true
 
+	pathArgumentDescription := `If PATH if given, it will depending of its type on filesystem:
+    - if a file, it will be used as the gitlab-ci file to check (similar to global --ci-file option)
+    - if a directory, it will be used as the folder from where to search for a ci file and a git repository (similar to global --directory option)
+   PATH have precedence over --ci-file and --directory options.`
+
+	app.ArgsUsage = "[PATH]"
+	app.Description = pathArgumentDescription
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "gitlab-url,u",
 			Value:       defaultGitlabRootUrl,
-			Usage:       "Root `URL` of the Gitlab instance to use API",
+			Usage:       "root `URL` of the Gitlab instance to use API",
 			EnvVar:      "GCL_GITLAB_URL",
 			Destination: &gitlabRootUrl,
 		},
@@ -248,25 +246,54 @@ Usage:
 			Destination: &directoryRoot,
 		},
 	}
+	cli.VersionFlag = cli.BoolFlag{
+		Name:  "version, V",
+		Usage: "print the version information",
+	}
 
 	app.Commands = []cli.Command{
 		{
+			Name:        "check",
+			Aliases:     []string{"c"},
+			Usage:       "Check the .gitlab-ci.yml (default command if none is given)",
+			Action:      commandCheck,
+			ArgsUsage:   "[PATH]",
+			Description: pathArgumentDescription,
+		},
+		{
 			Name:    "version",
 			Aliases: []string{"v"},
-			Usage:   "Show version information",
+			Usage:   "Print the version information",
 			Action: func(c *cli.Context) {
 				cli.ShowVersion(c)
 			},
 		},
-		{
-			Name:    "check",
-			Aliases: []string{"c"},
-			Usage:   "Check the .gitlab-ci.yml (default commend if none is given)",
-			Action:  commandCheck,
-		},
 	}
 
-	app.Action = commandCheck
+	app.Before = func(c *cli.Context) error {
+		directoryRoot, _ = filepath.Abs(directoryRoot)
+
+		// Check if the given gitlab-ci file path exists
+		if gitlabCiFilePath != "" {
+			gitlabCiFilePath, _ = filepath.Abs(gitlabCiFilePath)
+			fileInfo, err := os.Stat(gitlabCiFilePath)
+			if os.IsNotExist(err) {
+				return cli.NewExitError(fmt.Sprintf("'%s' does not exists", gitlabCiFilePath), 1)
+			}
+			if fileInfo.IsDir() {
+				return cli.NewExitError(fmt.Sprintf("'%s' is a directory, not a file", gitlabCiFilePath), 1)
+			}
+		}
+
+		//fmt.Printf("directoryRoot = %s\n", directoryRoot)
+		//fmt.Printf("gitlabCiFilePath = %s\n", gitlabCiFilePath)
+
+		return nil
+	}
+
+	app.Action = func(c *cli.Context) error {
+		return commandCheck(c)
+	}
 
 	app.Run(os.Args)
 }
