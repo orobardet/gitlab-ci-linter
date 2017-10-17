@@ -317,12 +317,6 @@ func commandCheck(c *cli.Context) error {
 	cwd, _ := os.Getwd()
 	relativeGitlabCiFilePath, _ := filepath.Rel(cwd, gitlabCiFilePath)
 
-	fmt.Printf("Validating %s... ", relativeGitlabCiFilePath)
-
-	if verboseMode {
-		fmt.Printf("\n")
-	}
-
 	// Find git repository
 	// First, start from gitlab-ci file location
 	gitRepoPath, err := findGitRepo(filepath.Dir(gitlabCiFilePath))
@@ -343,6 +337,15 @@ func commandCheck(c *cli.Context) error {
 				}
 			}
 		}
+	} else {
+		yellow := color.New(color.FgYellow).SprintFunc()
+		fmt.Printf(yellow("No GIT repository found, using default Gitlab API '%s'\n"), gitlabRootUrl)
+	}
+
+	fmt.Printf("Validating %s... ", relativeGitlabCiFilePath)
+
+	if verboseMode {
+		fmt.Printf("\n")
 	}
 
 	// Call the API to validate the gitlab-ci file
@@ -353,7 +356,7 @@ func commandCheck(c *cli.Context) error {
 
 	status, errorMessages, err := lintGitlabCIUsingAPI(gitlabRootUrl, string(ciFileContent))
 	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("Error querying Gitlab API '%s' for CI lint: %s", gitlabRootUrl, err), 0)
+		return cli.NewExitError(fmt.Sprintf("Error querying Gitlab API '%s' for CI lint: %s", gitlabRootUrl, err), 5)
 	}
 
 	if !status {
