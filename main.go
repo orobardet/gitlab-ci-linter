@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/go-ini/ini"
 	"github.com/urfave/cli"
 	"io/ioutil"
@@ -55,6 +56,9 @@ var gitlabCiFilePath string
 
 // Directory to start searching for gitlab-ci file and git repository
 var directoryRoot string
+
+// Tells if output should be colorized or not
+var colorMode = true
 
 // Tells if verbose mode is on or off
 var verboseMode = false
@@ -185,10 +189,10 @@ func checkGitlabAPIUrl(rootUrl string) (string, error) {
 
 	resp, err := httpClient.Do(req)
 
-	defer resp.Body.Close()
 	if err != nil {
 		return newRootUrl, err
 	}
+	defer resp.Body.Close()
 
 	// Getting the full URL used for the last query, after following potential redirection
 	lastUrl := resp.Request.URL.String()
@@ -230,10 +234,10 @@ func lintGitlabCIUsingAPI(rootUrl string, ciFileContent string) (status bool, ms
 
 	// Make the request to the API
 	resp, err := httpClient.Do(req)
-	defer resp.Body.Close()
 	if err != nil {
 		return
 	}
+	defer resp.Body.Close()
 
 	// Get the results
 	body, err := ioutil.ReadAll(resp.Body)
@@ -350,18 +354,23 @@ func commandCheck(c *cli.Context) error {
 
 	if !status {
 		if verboseMode {
-			fmt.Printf("%s KO\n", relativeGitlabCiFilePath)
-		} else {
-			fmt.Printf("KO\n")
+			fmt.Printf("%s ", relativeGitlabCiFilePath)
 		}
-		return cli.NewExitError(fmt.Sprintf("%s\n", strings.Join(errorMessages, "\n")), 10)
+
+		red := color.New(color.FgRed).SprintFunc()
+		fmt.Printf("%s\n", red("KO"))
+
+		messages := red(strings.Join(errorMessages, "\n"))
+		os.Stderr.WriteString(fmt.Sprintf("%s\n", messages))
+
+		return cli.NewExitError("", 10)
 	}
 
 	if verboseMode {
-		fmt.Printf("%s OK\n", relativeGitlabCiFilePath)
-	} else {
-		fmt.Printf("%s\n", relativeGitlabCiFilePath)
+		fmt.Printf("%s ", relativeGitlabCiFilePath)
 	}
+	green := color.New(color.FgGreen).SprintFunc()
+	fmt.Printf("%s\n", green("OK"))
 
 	return nil
 }
@@ -427,6 +436,11 @@ Usage:
 			Destination: &directoryRoot,
 		},
 		cli.BoolFlag{
+			Name:   "no-color,n",
+			Usage:  "don't color output. By defaults the output is colorized if a compatible terminal is detected.",
+			EnvVar: "GCL_NOCOLOR",
+		},
+		cli.BoolFlag{
 			Name:        "verbose,v",
 			Usage:       "verbose mode",
 			EnvVar:      "GCL_VERBOSE",
@@ -458,6 +472,14 @@ Usage:
 	}
 
 	app.Before = func(c *cli.Context) error {
+		if c.Bool("no-color") {
+			colorMode = false
+		}
+
+		if !colorMode {
+			color.NoColor = true
+		}
+
 		// Check if the given directory path exists
 		if directoryRoot != "" {
 			directoryRoot, _ = filepath.Abs(directoryRoot)
