@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/go-ini/ini"
@@ -9,10 +10,15 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 )
+
+// Application name
+var APPNAME = "gitlab-ci-linter"
 
 // Version of the program
 var VERSION = "0.0.0-dev"
@@ -50,17 +56,30 @@ var gitlabCiFilePath string
 // Directory to start searching for gitlab-ci file and git repository
 var directoryRoot string
 
+// Tells if verbose mode is on or off
+var verboseMode = false
+
+type GitlabAPILintRequest struct {
+	Content string `json:"content"`
+}
+
+type GitlabAPILintResponse struct {
+	Status string   `json:"status,omitempty"`
+	Error  string   `json:"error,omitempty"`
+	Errors []string `json:"errors,omitempty"`
+}
+
 // Search in the given directory a git repository directory
 // It goes up in the filesystem hierarchy until a repository is found, or the root is reach
 // A git repository directory is a '.git' folder (gitRepoDirectory constant) containing a 'config' file
 // (gitRepoConfigFilename constant)
 func findGitRepo(directory string) (string, error) {
-	candidate := directory + string(filepath.Separator) + gitRepoDirectory
+	candidate := path.Join(directory, gitRepoDirectory)
 
 	fileInfo, err := os.Stat(candidate)
 	if !os.IsNotExist(err) && fileInfo.IsDir() {
 		// Found a git directory, check of it has a config file
-		fileInfo, err = os.Stat(candidate + string(filepath.Separator) + gitRepoConfigFilename)
+		fileInfo, err = os.Stat(path.Join(candidate, gitRepoConfigFilename))
 
 		if !os.IsNotExist(err) && !fileInfo.IsDir() {
 			return candidate, nil
@@ -78,7 +97,7 @@ func findGitRepo(directory string) (string, error) {
 // Search in the given directory a git repository directory
 // It goes up in the filesystem hierarchy until a repository is found, or the root is reach
 func findGitlabCiFile(directory string) (string, error) {
-	candidate := directory + string(filepath.Separator) + gitlabCiFileName
+	candidate := path.Join(directory, gitlabCiFileName)
 
 	fileInfo, err := os.Stat(candidate)
 	if !os.IsNotExist(err) && !fileInfo.IsDir() {
@@ -95,7 +114,7 @@ func findGitlabCiFile(directory string) (string, error) {
 
 // Extract the orign remote remote url from a git repo directory
 func getGitOriginRemoteUrl(gitDirectory string) (string, error) {
-	cfg, err := ini.Load(gitDirectory + string(filepath.Separator) + gitRepoConfigFilename)
+	cfg, err := ini.Load(path.Join(gitDirectory, gitRepoConfigFilename))
 
 	if err != nil {
 		fmt.Println(err)
@@ -129,17 +148,136 @@ func httpiseRemoteUrl(remoteUrl string) string {
 	return ""
 }
 
-func requestGitlabAPILint(rootUrl string) bool {
-	resp, err := http.Post(rootUrl+gitlabApiCiLintPath, "application/json", strings.NewReader(`{"content": "{ \"image\": \"ruby:2.1\", \"services\": [\"postgres\"], \"before_script\": [\"gem install bundler\", \"bundle install\", \"bundle exec rake db:create\"], \"variables\": {\"DB_NAME\": \"postgres\"}, \"types\": [\"test\", \"deploy\", \"notify\"], \"rspec\": { \"script\": \"rake spec\", \"tags\": [\"ruby\", \"postgres\"], \"only\": [\"branches\"]}}"}`))
-	if err != nil {
-		return false
+func initGitlabHttpClientRequest(method string, url string, content string) (*http.Client, *http.Request, error) {
+	var httpClient *http.Client
+	var req *http.Request
+
+	httpClient = &http.Client{
+		Timeout: time.Second * 2,
 	}
+
+	req, err := http.NewRequest(method, url, strings.NewReader(content))
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("User-Agent", fmt.Sprintf("%s/%s", APPNAME, VERSION))
+
+	return httpClient, req, err
+}
+
+// Check if we can get a response with the rootUrl on the API CI Lint endpoint, and if a redirection occurs
+// If a redirection is detected, return the redirected root URL.
+// This is needed as redirection response only occurs when the API is call using en HTTP GET, but in the en the API
+// has to be called in POST
+func checkGitlabAPIUrl(rootUrl string) (string, error) {
+
+	newRootUrl := rootUrl
+
+	lintURL := rootUrl + gitlabApiCiLintPath
+
+	if verboseMode {
+		fmt.Printf("Checking '%s' (using '%s')...\n", rootUrl, lintURL)
+	}
+
+	httpClient, req, err := initGitlabHttpClientRequest("GET", lintURL, "")
+	if err != nil {
+		return newRootUrl, err
+	}
+
+	resp, err := httpClient.Do(req)
+
 	defer resp.Body.Close()
+	if err != nil {
+		return newRootUrl, err
+	}
+
+	// Getting the full URL used for the last query, after following potential redirection
+	lastUrl := resp.Request.URL.String()
+
+	// Let's try to get the redirected root URL by removing the gitlab API path from the last use URL
+	lastRootUrl := strings.TrimSuffix(lastUrl, gitlabApiCiLintPath)
+	// If the result is not empty or unchanged, it means
+	if lastRootUrl != "" && lastRootUrl != lastUrl {
+		newRootUrl = lastRootUrl
+	}
+
+	if verboseMode {
+		fmt.Printf("Url '%s' validated\n", newRootUrl)
+	}
+
+	return newRootUrl, nil
+}
+
+// Send the content of a gitlab-ci file to a Gitlab instance lint API to check its validity
+// In case of invalid, lint error messages are returned in `msgs`
+func lintGitlabCIUsingAPI(rootUrl string, ciFileContent string) (status bool, msgs []string, err error) {
+
+	msgs = []string{}
+	status = false
+
+	// Prepare the JSON content of the POST request:
+	// {
+	//   "content": "<ESCAPED CONTENT OF THE GITLAB-CI FILE>"
+	// }
+	var reqParams = GitlabAPILintRequest{Content: ciFileContent}
+	reqBody, _ := json.Marshal(reqParams)
+
+	// Prepare requesting the API
+	lintURL := rootUrl + gitlabApiCiLintPath
+	if verboseMode {
+		fmt.Printf("Querying %s...\n", lintURL)
+	}
+	httpClient, req, err := initGitlabHttpClientRequest("POST", lintURL, string(reqBody))
+
+	// Make the request to the API
+	resp, err := httpClient.Do(req)
+	defer resp.Body.Close()
+	if err != nil {
+		return
+	}
+
+	// Get the results
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+	var result GitlabAPILintResponse
+	err = json.Unmarshal([]byte(body), &result)
+	if err != nil {
+		return
+	}
 
-	fmt.Printf("%s\n", body)
+	// Analyse the results
+	if result.Status == "valid" {
+		status = true
+		return
+	}
 
-	return false
+	if result.Status == "invalid" {
+		msgs = result.Errors
+	}
+
+	if result.Error != "" {
+		err = errors.New(result.Error)
+	}
+
+	return
+}
+
+// Analyse and pre-process command line arguments and options for the 'check' command
+// This also use global arguments/options if they are any
+func processCommandCheckArgs(args []string) {
+	if len(args) > 0 && args[0] != "" {
+		path := args[0]
+
+		fileInfo, err := os.Stat(path)
+		if !os.IsNotExist(err) {
+			if fileInfo.IsDir() {
+				directoryRoot, _ = filepath.Abs(path)
+			} else {
+				gitlabCiFilePath, _ = filepath.Abs(path)
+			}
+		}
+	}
 }
 
 // 'check' command of the program, which is the main action
@@ -151,6 +289,13 @@ func requestGitlabAPILint(rootUrl string) bool {
 // Finally, it call the API with the gitlab-ci file content. If the content if syntax valid, it silently stop. Else it
 // display the error messages returned by the API and exit with an error
 func commandCheck(c *cli.Context) error {
+
+	processCommandCheckArgs(c.Args())
+
+	if verboseMode {
+		fmt.Printf("Settings:\n  directoryRoot: %s\n  gitlabCiFilePath: %s\n", directoryRoot, gitlabCiFilePath)
+	}
+
 	// Find gitlab-ci file, if not given
 	if gitlabCiFilePath == "" {
 		file, err := findGitlabCiFile(directoryRoot)
@@ -159,6 +304,15 @@ func commandCheck(c *cli.Context) error {
 			return nil
 		}
 		gitlabCiFilePath = file
+	}
+
+	cwd, _ := os.Getwd()
+	relativeGitlabCiFilePath, _ := filepath.Rel(cwd, gitlabCiFilePath)
+
+	fmt.Printf("Validating %s... ", relativeGitlabCiFilePath)
+
+	if verboseMode {
+		fmt.Printf("\n")
 	}
 
 	// Find git repository
@@ -173,15 +327,41 @@ func commandCheck(c *cli.Context) error {
 	if gitRepoPath != "" {
 		remoteUrl, err := getGitOriginRemoteUrl(gitRepoPath)
 		if err == nil {
-			httpRemoteUrl := httpiseRemoteUrl(remoteUrl)
-			if httpRemoteUrl != "" {
-				fmt.Printf("API url found: %s", httpRemoteUrl)
+			httpRemoteUrl, err := checkGitlabAPIUrl(httpiseRemoteUrl(remoteUrl))
+			if err == nil && httpRemoteUrl != "" {
 				gitlabRootUrl = httpRemoteUrl
+				if verboseMode {
+					fmt.Printf("API url found: %s\n", httpRemoteUrl)
+				}
 			}
 		}
 	}
 
 	// Call the API to validate the gitlab-ci file
+	ciFileContent, err := ioutil.ReadFile(gitlabCiFilePath)
+	if err != nil {
+		return cli.NewExitError(fmt.Sprintf("Error while reading '%s' file content: %s", relativeGitlabCiFilePath, err), 5)
+	}
+
+	status, errorMessages, err := lintGitlabCIUsingAPI(gitlabRootUrl, string(ciFileContent))
+	if err != nil {
+		return cli.NewExitError(fmt.Sprintf("Error querying Gitlab API '%s' for CI lint: %s", gitlabRootUrl, err), 0)
+	}
+
+	if !status {
+		if verboseMode {
+			fmt.Printf("%s KO\n", relativeGitlabCiFilePath)
+		} else {
+			fmt.Printf("KO\n")
+		}
+		return cli.NewExitError(fmt.Sprintf("%s\n", strings.Join(errorMessages, "\n")), 10)
+	}
+
+	if verboseMode {
+		fmt.Printf("%s OK\n", relativeGitlabCiFilePath)
+	} else {
+		fmt.Printf("%s\n", relativeGitlabCiFilePath)
+	}
 
 	return nil
 }
@@ -206,10 +386,11 @@ Usage:
 
 {{if .Commands}}Commands:
 {{range .Commands}}{{if not .HideHelp}}   {{join .Names ", "}}{{ "\t"}}{{.Usage}}{{ "\n" }}{{end}}{{end}}
-   If no command is given, 'check 'is used by default{{end}}`
+   If no command is given, 'check 'is used by default
+{{end}}`
 
 	app := cli.NewApp()
-	app.Name = "gitlab-ci-linter"
+	app.Name = APPNAME
 	app.Version = fmt.Sprintf("%s (%s)", VERSION, REVISION[:int(math.Min(float64(len(REVISION)), 7))])
 	app.Authors = []cli.Author{
 		{Name: "Olivier ROBARDET"},
@@ -245,6 +426,12 @@ Usage:
 			EnvVar:      "GCL_DIRECTORY",
 			Destination: &directoryRoot,
 		},
+		cli.BoolFlag{
+			Name:        "verbose,v",
+			Usage:       "verbose mode",
+			EnvVar:      "GCL_VERBOSE",
+			Destination: &verboseMode,
+		},
 	}
 	cli.VersionFlag = cli.BoolFlag{
 		Name:  "version, V",
@@ -271,7 +458,17 @@ Usage:
 	}
 
 	app.Before = func(c *cli.Context) error {
-		directoryRoot, _ = filepath.Abs(directoryRoot)
+		// Check if the given directory path exists
+		if directoryRoot != "" {
+			directoryRoot, _ = filepath.Abs(directoryRoot)
+			fileInfo, err := os.Stat(directoryRoot)
+			if os.IsNotExist(err) {
+				return cli.NewExitError(fmt.Sprintf("'%s' does not exists", directoryRoot), 1)
+			}
+			if !fileInfo.IsDir() {
+				return cli.NewExitError(fmt.Sprintf("'%s' is not a directory", directoryRoot), 1)
+			}
+		}
 
 		// Check if the given gitlab-ci file path exists
 		if gitlabCiFilePath != "" {
@@ -284,9 +481,6 @@ Usage:
 				return cli.NewExitError(fmt.Sprintf("'%s' is a directory, not a file", gitlabCiFilePath), 1)
 			}
 		}
-
-		//fmt.Printf("directoryRoot = %s\n", directoryRoot)
-		//fmt.Printf("gitlabCiFilePath = %s\n", gitlabCiFilePath)
 
 		return nil
 	}
