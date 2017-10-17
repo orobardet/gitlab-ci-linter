@@ -57,6 +57,10 @@ var gitlabCiFilePath string
 // Directory to start searching for gitlab-ci file and git repository
 var directoryRoot string
 
+// Timeout in seconds for HTTP request to the Gitlab API
+// Request will fail if lasting more than the timeout
+var httpRequestTimeout uint = 2
+
 // Tells if output should be colorized or not
 var colorMode = true
 
@@ -157,7 +161,7 @@ func initGitlabHttpClientRequest(method string, url string, content string) (*ht
 	var req *http.Request
 
 	httpClient = &http.Client{
-		Timeout: time.Second * 2,
+		Timeout: time.Second * time.Duration(httpRequestTimeout),
 	}
 
 	req, err := http.NewRequest(method, url, strings.NewReader(content))
@@ -434,6 +438,13 @@ Usage:
 			Usage:       "`DIR` is the directory from where to search for gitlab-ci file and git repository",
 			EnvVar:      "GCL_DIRECTORY",
 			Destination: &directoryRoot,
+		},
+		cli.UintFlag{
+			Name:        "timeout,t",
+			Value:       httpRequestTimeout,
+			Usage:       "timeout in second after which http request to Gitlab API will timeout (and the program will fails)",
+			EnvVar:      "GCL_TIMEOUT",
+			Destination: &httpRequestTimeout,
 		},
 		cli.BoolFlag{
 			Name:   "no-color,n",
