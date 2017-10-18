@@ -77,6 +77,16 @@ type GitlabAPILintResponse struct {
 	Errors []string `json:"errors,omitempty"`
 }
 
+const (
+	HookError = iota
+	HookCreated
+	HookAlreadyCreated
+	HookAlreadyExists
+	HookDeleted
+	HookNotExisting
+	HookNotMatching
+)
+
 // Search in the given directory a git repository directory
 // It goes up in the filesystem hierarchy until a repository is found, or the root is reach
 // A git repository directory is a '.git' folder (gitRepoDirectory constant) containing a 'config' file
@@ -271,21 +281,32 @@ func lintGitlabCIUsingAPI(rootUrl string, ciFileContent string) (status bool, ms
 	return
 }
 
-// Analyse and pre-process command line arguments and options for the 'check' command
-// This also use global arguments/options if they are any
-func processCommandCheckArgs(args []string) {
-	if len(args) > 0 && args[0] != "" {
-		path := args[0]
+// Analyse a PATH argument, that can be a directory or file, to use it as a gitlab-ci file a a directory
+// where to start searching
+func processPathArgument(path string) {
+	fileInfo, err := os.Stat(path)
+	if !os.IsNotExist(err) {
+		if fileInfo.IsDir() {
+			directoryRoot, _ = filepath.Abs(path)
+		} else {
+			gitlabCiFilePath, _ = filepath.Abs(path)
+		}
+	}
+}
 
-		fileInfo, err := os.Stat(path)
-		if !os.IsNotExist(err) {
-			if fileInfo.IsDir() {
-				directoryRoot, _ = filepath.Abs(path)
-			} else {
-				gitlabCiFilePath, _ = filepath.Abs(path)
+func guessGitlabAPIFromGitRepo(gitRepoPath string) (apiRootUrl string, err error) {
+	remoteUrl, err := getGitOriginRemoteUrl(gitRepoPath)
+	if err == nil {
+		httpRemoteUrl, err := checkGitlabAPIUrl(httpiseRemoteUrl(remoteUrl))
+		if err == nil && httpRemoteUrl != "" {
+			apiRootUrl = httpRemoteUrl
+			if verboseMode {
+				fmt.Printf("API url found: %s\n", httpRemoteUrl)
 			}
 		}
 	}
+
+	return
 }
 
 // 'check' command of the program, which is the main action
@@ -298,7 +319,9 @@ func processCommandCheckArgs(args []string) {
 // display the error messages returned by the API and exit with an error
 func commandCheck(c *cli.Context) error {
 
-	processCommandCheckArgs(c.Args())
+	if c.Args().Present() && c.Args().Get(0) != "" {
+		processPathArgument(c.Args().Get(0))
+	}
 
 	if verboseMode {
 		fmt.Printf("Settings:\n  directoryRoot: %s\n  gitlabCiFilePath: %s\n", directoryRoot, gitlabCiFilePath)
@@ -317,8 +340,7 @@ func commandCheck(c *cli.Context) error {
 	cwd, _ := os.Getwd()
 	relativeGitlabCiFilePath, _ := filepath.Rel(cwd, gitlabCiFilePath)
 
-	// Find git repository
-	// First, start from gitlab-ci file location
+	// Find git repository. First, start from gitlab-ci file location
 	gitRepoPath, err := findGitRepo(filepath.Dir(gitlabCiFilePath))
 	if err == nil {
 		// if not found, search from directoryRoot
@@ -327,16 +349,7 @@ func commandCheck(c *cli.Context) error {
 
 	// Extract origin remote from repository en guess gitlab url
 	if gitRepoPath != "" {
-		remoteUrl, err := getGitOriginRemoteUrl(gitRepoPath)
-		if err == nil {
-			httpRemoteUrl, err := checkGitlabAPIUrl(httpiseRemoteUrl(remoteUrl))
-			if err == nil && httpRemoteUrl != "" {
-				gitlabRootUrl = httpRemoteUrl
-				if verboseMode {
-					fmt.Printf("API url found: %s\n", httpRemoteUrl)
-				}
-			}
-		}
+		gitlabRootUrl, _ = guessGitlabAPIFromGitRepo(gitRepoPath)
 	} else {
 		yellow := color.New(color.FgYellow).SprintFunc()
 		fmt.Printf(yellow("No GIT repository found, using default Gitlab API '%s'\n"), gitlabRootUrl)
@@ -378,6 +391,108 @@ func commandCheck(c *cli.Context) error {
 	}
 	green := color.New(color.FgGreen).SprintFunc()
 	fmt.Printf("%s\n", green("OK"))
+
+	return nil
+}
+
+func createGitHookLink(gitRepoPath string, hookName string) (int, error) {
+	currentExe, err := os.Executable()
+	if err != nil {
+		return HookError, err
+	}
+
+	err = os.MkdirAll(path.Join(gitRepoPath, "hooks"), 0755)
+	if err != nil {
+		return HookError, err
+	}
+
+	hookPath := path.Join(gitRepoPath, "hooks", hookName)
+
+	// There is no hook already
+	fi, err := os.Lstat(hookPath)
+	if os.IsNotExist(err) {
+		err = os.Symlink(currentExe, hookPath)
+		if err != nil {
+			return HookError, err
+		}
+	} else {
+		// If there is a hook, maybe it's already ourself?
+		if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
+			return HookAlreadyExists, nil
+		} else {
+			linkDest, err := os.Readlink(hookPath)
+			if err != nil {
+				return HookError, err
+			}
+
+			if linkDest == currentExe {
+				return HookAlreadyCreated, nil
+			} else {
+				return HookAlreadyExists, nil
+			}
+		}
+	}
+
+	return HookCreated, nil
+
+}
+
+// 'install' command of the program
+func commandInstall(c *cli.Context) error {
+
+	if c.Args().Present() && c.Args().Get(0) != "" {
+		processPathArgument(c.Args().Get(0))
+	}
+
+	// Find git repository. First, start from gitlab-ci file location
+	gitRepoPath, err := findGitRepo(filepath.Dir(gitlabCiFilePath))
+	if err == nil {
+		// if not found, search from directoryRoot
+		gitRepoPath, _ = findGitRepo(directoryRoot)
+	}
+
+	if gitRepoPath == "" {
+		return cli.NewExitError(fmt.Sprintf("No GIT repository found, can't install a hook"), 5)
+	}
+	if verboseMode {
+		fmt.Printf("Git repository found: %s\n", gitRepoPath)
+	}
+
+	// Extract origin remote from repository en guess gitlab url
+	_, err = guessGitlabAPIFromGitRepo(gitRepoPath)
+
+	if err != nil {
+		return cli.NewExitError(fmt.Sprintf("No valid and responding Gitlab API URL found from repository's origin remote, can't install a hook"), 5)
+	}
+
+	status, err := createGitHookLink(gitRepoPath, "pre-commit")
+	if err != nil {
+		return cli.NewExitError(err, 5)
+	}
+	switch status {
+	case HookAlreadyExists:
+		yellow := color.New(color.FgYellow).SprintFunc()
+		msg := fmt.Sprintf(yellow("A pre-commit hook already exists\nPlease install manually by adding a call to me in your pre-commit script."))
+		return cli.NewExitError(msg, 4)
+	case HookAlreadyCreated:
+		cyan := color.New(color.FgCyan).SprintFunc()
+		fmt.Printf(cyan("Already installed.\n"))
+	case HookCreated:
+		green := color.New(color.FgGreen).SprintFunc()
+		fmt.Printf(green("Git pre-commit hook installed in %s\n"), filepath.Dir(gitRepoPath))
+	default:
+		return cli.NewExitError("Unkown error", 5)
+	}
+
+	return nil
+}
+
+// 'uninstall' command of the program
+func commandUninstall(c *cli.Context) error {
+
+	if c.Args().Present() && c.Args().Get(0) != "" {
+		processPathArgument(c.Args().Get(0))
+	}
 
 	return nil
 }
@@ -472,6 +587,22 @@ Usage:
 			Aliases:     []string{"c"},
 			Usage:       "Check the .gitlab-ci.yml (default command if none is given)",
 			Action:      commandCheck,
+			ArgsUsage:   "[PATH]",
+			Description: pathArgumentDescription,
+		},
+		{
+			Name:        "install",
+			Aliases:     []string{"i"},
+			Usage:       "install as git pre-commit hook",
+			Action:      commandInstall,
+			ArgsUsage:   "[PATH]",
+			Description: pathArgumentDescription,
+		},
+		{
+			Name:        "uninstall",
+			Aliases:     []string{"u"},
+			Usage:       "uninstall the git pre-commit hook",
+			Action:      commandUninstall,
 			ArgsUsage:   "[PATH]",
 			Description: pathArgumentDescription,
 		},
