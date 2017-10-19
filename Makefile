@@ -27,6 +27,8 @@ ifeq (run,$(firstword $(MAKECMDGOALS)))
   $(eval $(RUNARGS):;@:)
 endif
 
+DEBUG:=0
+
 # Version number to use when building the program
 VERSION?=$(shell git describe --tags --always --match=v* 2> /dev/null || cat ${SOURCEDIR}/VERSION 2> /dev/null || echo v0.0.0)-dev
 # Revision or VCS hash to use when building the program. Can be long, it may be truncated by the program at
@@ -36,6 +38,9 @@ BUILD_TIME?=$(shell date +%FT%T%z)
 
 
 LDFLAGS=-X main.VERSION=${VERSION} -X main.REVISION=${REVISION} -X main.BUILD_TIME=${BUILD_TIME}
+ifeq ($(DEBUG),0)
+  LDFLAGS+=-s -w
+endif
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go' -not -path "$(SOURCEDIR)/vendor/*")
 
 .DEFAULT_GOAL: all
@@ -61,4 +66,4 @@ install:
 .PHONY: clean
 clean:
 	go clean
-	if  [ -f "$(BINARY)" ] ; then rm $(BINARY) ; fi
+	if [ -f "$(BINARY)" ] ; then rm $(BINARY) ; fi
