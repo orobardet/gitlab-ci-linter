@@ -425,6 +425,11 @@ func createGitHookLink(gitRepoPath string, hookName string) (int, error) {
 				return HookError, err
 			}
 
+			linkDest, err = filepath.Abs(linkDest)
+			if err != nil {
+				return HookError, err
+			}
+
 			if linkDest == currentExe {
 				return HookAlreadyCreated, nil
 			} else {
@@ -434,7 +439,50 @@ func createGitHookLink(gitRepoPath string, hookName string) (int, error) {
 	}
 
 	return HookCreated, nil
+}
 
+func deleteGitHookLink(gitRepoPath string, hookName string) (int, error) {
+	hookPath := path.Join(gitRepoPath, "hooks", hookName)
+
+	fi, err := os.Lstat(hookPath)
+	if os.IsNotExist(err) {
+		return HookNotExisting, nil
+	} else {
+		currentExe, err := os.Executable()
+		if err != nil {
+			return HookError, err
+		}
+		if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
+			return HookNotMatching, nil
+		} else {
+			linkDest, err := os.Readlink(hookPath)
+			if err != nil {
+				return HookError, err
+			}
+
+			linkDest, err = filepath.Abs(linkDest)
+			if err != nil {
+				return HookError, err
+			}
+
+			if verboseMode {
+				fmt.Println(linkDest)
+			}
+
+			if linkDest == currentExe {
+				err = os.Remove(hookPath)
+				if err != nil {
+					return HookError, err
+				}
+				return HookDeleted, nil
+			} else {
+				return HookNotMatching, nil
+			}
+		}
+
+	}
+
+	return HookDeleted, nil
 }
 
 // 'install' command of the program
@@ -492,6 +540,39 @@ func commandUninstall(c *cli.Context) error {
 
 	if c.Args().Present() && c.Args().Get(0) != "" {
 		processPathArgument(c.Args().Get(0))
+	}
+
+	// Find git repository. First, start from gitlab-ci file location
+	gitRepoPath, err := findGitRepo(filepath.Dir(gitlabCiFilePath))
+	if err == nil {
+		// if not found, search from directoryRoot
+		gitRepoPath, _ = findGitRepo(directoryRoot)
+	}
+
+	if gitRepoPath == "" {
+		return cli.NewExitError(fmt.Sprintf("No GIT repository found, can't install a hook"), 5)
+	}
+	if verboseMode {
+		fmt.Printf("Git repository found: %s\n", gitRepoPath)
+	}
+
+	status, err := deleteGitHookLink(gitRepoPath, "pre-commit")
+	if err != nil {
+		return cli.NewExitError(err, 5)
+	}
+	switch status {
+	case HookNotMatching:
+		red := color.New(color.FgRed).SprintFunc()
+		msg := fmt.Sprintf(red("Unknown pre-commit hook\nPlease uninstall manually."))
+		return cli.NewExitError(msg, 4)
+	case HookNotExisting:
+		yellow := color.New(color.FgYellow).SprintFunc()
+		fmt.Printf(yellow("No pre-commit hook found.\n"))
+	case HookDeleted:
+		green := color.New(color.FgGreen).SprintFunc()
+		fmt.Printf(green("Git pre-commit hook uinstalled.\n"))
+	default:
+		return cli.NewExitError("Unkown error", 5)
 	}
 
 	return nil
