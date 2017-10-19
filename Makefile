@@ -35,8 +35,8 @@ REVISION?=$(shell git rev-parse HEAD)
 BUILD_TIME?=$(shell date +%FT%T%z)
 
 
-LDFLAGS=--X main.VERSION=${VERSION} -X main.REVISION=${REVISION} -X main.BUILD_TIME=${BUILD_TIME}
-SOURCES := $(shell find $(SOURCEDIR) -path $(SOURCEDIR)/vendor -prune -o -name '*.go')
+LDFLAGS=-X main.VERSION=${VERSION} -X main.REVISION=${REVISION} -X main.BUILD_TIME=${BUILD_TIME}
+SOURCES := $(shell find $(SOURCEDIR) -name '*.go' -not -path "$(SOURCEDIR)/vendor/*")
 
 .DEFAULT_GOAL: all
 
@@ -61,4 +61,4 @@ install:
 .PHONY: clean
 clean:
 	go clean
-	([[ -f ${BINARY} ]] && rm ${BINARY}) || true
+	if  [ -f "$(BINARY)" ] ; then rm $(BINARY) ; fi
