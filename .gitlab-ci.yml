@@ -23,7 +23,7 @@ get vendors:
 
 gofmt:
   stage: checks
-  script: gofmt -l -e $(find . -name "*.go" -type f -not -path "./vendor/*")
+  script: gofmt -s -l -e $(find . -name "*.go" -type f -not -path "./vendor/*")
 
 govet:
   stage: checks
