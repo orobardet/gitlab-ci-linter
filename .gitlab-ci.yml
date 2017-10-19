@@ -2,6 +2,7 @@ image: registry.gitlab.com/orobardet/gitlab-ci-linter/build
 
 stages:
   - vendors
+  - checks
   - build
 
 before_script:
@@ -18,6 +19,15 @@ get vendors:
     paths:
       - vendor/
     expire_in: 1 hour
+
+
+gofmt:
+  stage: checks
+  script: gofmt -l -e $(find . -name "*.go" -type f -not -path "./vendor/*")
+
+govet:
+  stage: checks
+  script: go vet
 
 build:
   stage: build
