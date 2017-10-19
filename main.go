@@ -59,7 +59,7 @@ var directoryRoot string
 
 // Timeout in seconds for HTTP request to the Gitlab API
 // Request will fail if lasting more than the timeout
-var httpRequestTimeout uint = 2
+var httpRequestTimeout uint = 5
 
 // Tells if output should be colorized or not
 var colorMode = true
@@ -298,11 +298,16 @@ func guessGitlabAPIFromGitRepo(gitRepoPath string) (apiRootUrl string, err error
 	remoteUrl, err := getGitOriginRemoteUrl(gitRepoPath)
 	if err == nil {
 		httpRemoteUrl, err := checkGitlabAPIUrl(httpiseRemoteUrl(remoteUrl))
-		if err == nil && httpRemoteUrl != "" {
+		if err != nil {
+			return "", err
+		}
+		if httpRemoteUrl != "" {
 			apiRootUrl = httpRemoteUrl
 			if verboseMode {
 				fmt.Printf("API url found: %s\n", httpRemoteUrl)
 			}
+		} else {
+			return "", errors.New("Unknown error occurs")
 		}
 	}
 
@@ -349,7 +354,10 @@ func commandCheck(c *cli.Context) error {
 
 	// Extract origin remote from repository en guess gitlab url
 	if gitRepoPath != "" {
-		gitlabRootUrl, _ = guessGitlabAPIFromGitRepo(gitRepoPath)
+		gitlabRootUrl, err = guessGitlabAPIFromGitRepo(gitRepoPath)
+		if err != nil {
+			return cli.NewExitError(fmt.Sprintf("No valid and responding Gitlab API URL found from repository's origin remote: %s", err), 5)
+		}
 	} else {
 		yellow := color.New(color.FgYellow).SprintFunc()
 		fmt.Printf(yellow("No GIT repository found, using default Gitlab API '%s'\n"), gitlabRootUrl)
