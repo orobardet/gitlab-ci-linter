@@ -4,6 +4,11 @@ stages:
   - vendors
   - build
 
+before_script:
+  - cd $GOPATH/src
+  - ln -s $CI_PROJECT_DIR
+  - cd $(basename $CI_PROJECT_DIR)
+
 get vendors:
   stage: vendors
   script:
