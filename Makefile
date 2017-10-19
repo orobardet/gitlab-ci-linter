@@ -60,4 +60,5 @@ install:
 
 .PHONY: clean
 clean:
-	if [ -f ${BINARY} ] ; then rm ${BINARY} ; fi
+	go clean
+	([[ -f ${BINARY} ]] && rm ${BINARY}) || true
