@@ -2,7 +2,7 @@ stages:
   - build
 
 build:
-  image: golang:1.9
+  image: registry.gitlab.com/orobardet/gitlab-ci-linter/build
   stage: build
   script:
     - make
