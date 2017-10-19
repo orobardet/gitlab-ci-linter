@@ -360,7 +360,7 @@ func commandCheck(c *cli.Context) error {
 		}
 	} else {
 		yellow := color.New(color.FgYellow).SprintFunc()
-		fmt.Printf(yellow("No GIT repository found, using default Gitlab API '%s'\n"), gitlabRootUrl)
+		fmt.Fprintf(color.Output, yellow("No GIT repository found, using default Gitlab API '%s'\n"), gitlabRootUrl)
 	}
 
 	fmt.Printf("Validating %s... ", relativeGitlabCiFilePath)
@@ -386,7 +386,7 @@ func commandCheck(c *cli.Context) error {
 		}
 
 		red := color.New(color.FgRed).SprintFunc()
-		fmt.Printf("%s\n", red("KO"))
+		fmt.Fprintf(color.Output, "%s\n", red("KO"))
 
 		messages := red(strings.Join(errorMessages, "\n"))
 		os.Stderr.WriteString(fmt.Sprintf("%s\n", messages))
@@ -398,7 +398,7 @@ func commandCheck(c *cli.Context) error {
 		fmt.Printf("%s ", relativeGitlabCiFilePath)
 	}
 	green := color.New(color.FgGreen).SprintFunc()
-	fmt.Printf("%s\n", green("OK"))
+	fmt.Fprintf(color.Output, "%s\n", green("OK"))
 
 	return nil
 }
@@ -531,10 +531,10 @@ func commandInstall(c *cli.Context) error {
 		return cli.NewExitError(msg, 4)
 	case HookAlreadyCreated:
 		cyan := color.New(color.FgCyan).SprintFunc()
-		fmt.Printf(cyan("Already installed.\n"))
+		fmt.Fprintf(color.Output, cyan("Already installed.\n"))
 	case HookCreated:
 		green := color.New(color.FgGreen).SprintFunc()
-		fmt.Printf(green("Git pre-commit hook installed in %s\n"), filepath.Dir(gitRepoPath))
+		fmt.Fprintf(color.Output, green("Git pre-commit hook installed in %s\n"), filepath.Dir(gitRepoPath))
 	default:
 		return cli.NewExitError("Unkown error", 5)
 	}
@@ -574,10 +574,10 @@ func commandUninstall(c *cli.Context) error {
 		return cli.NewExitError(msg, 4)
 	case HookNotExisting:
 		yellow := color.New(color.FgYellow).SprintFunc()
-		fmt.Printf(yellow("No pre-commit hook found.\n"))
+		fmt.Fprintf(color.Output, yellow("No pre-commit hook found.\n"))
 	case HookDeleted:
 		green := color.New(color.FgGreen).SprintFunc()
-		fmt.Printf(green("Git pre-commit hook uinstalled.\n"))
+		fmt.Fprintf(color.Output, green("Git pre-commit hook uinstalled.\n"))
 	default:
 		return cli.NewExitError("Unkown error", 5)
 	}
