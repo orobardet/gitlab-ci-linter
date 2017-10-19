@@ -474,7 +474,6 @@ func deleteGitHookLink(gitRepoPath string, hookName string) (int, error) {
 				if err != nil {
 					return HookError, err
 				}
-				return HookDeleted, nil
 			} else {
 				return HookNotMatching, nil
 			}
