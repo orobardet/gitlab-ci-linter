@@ -10,7 +10,7 @@
 SOURCEDIR=.
 
 # Output path and name of the program binary result
-BINARY?=.build/gitlab-ci-linter
+BINARY?=$(if $(filter $(OS),Windows_NT),.build/gitlab-ci-linter.exe,.build/gitlab-ci-linter)
 
 # Use the environnement variable to pass arguments to the program when using `make run`
 # e.g.:
