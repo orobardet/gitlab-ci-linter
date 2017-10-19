@@ -16,6 +16,7 @@ get vendors:
 
 build:
   stage: build
-  dependencies: get vendors
+  dependencies:
+    - get vendors
   script:
     - make
