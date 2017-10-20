@@ -30,6 +30,22 @@ You don't even need a Git client.
 The only thing required is a network connection to the Gitlab instance you are using in the repository you want to check.    
 And a git repository to check of course, having an `origin` remote corresponding to a Gitlab instance and a `.gitlab-ci.yml` file. 
 
+## Migrating from old bash script version
+
+If you don't want to/can't update your existing repositories with a a pre-commit hook to the old bash script, the best 
+way is to replace the script with a symlink to the new binary. It's a drop-in replacement.
+
+But it would be better to remove (manually) the previous pre-commit hook link, and then install the new go version:
+
+```shell
+# check if the current pre-commit hook is a link to the old bash script
+ls -lsa .git/hooks/pre-commit
+# if so, remove it
+rm .git/hooks/pre-commit
+# and then install the new version normally
+gitlab-ci-linter install
+```  
+
 # Usage
 
 Once installed, it can be used as a simple standalone program, by launching it from any directory 
