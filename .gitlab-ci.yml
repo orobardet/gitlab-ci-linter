@@ -20,7 +20,6 @@ get vendors:
       - vendor/
     expire_in: 1 hour
 
-
 gofmt:
   stage: checks
   script: gofmt -s -l -e $(find . -name "*.go" -type f -not -path "./vendor/*")
@@ -29,9 +28,52 @@ govet:
   stage: checks
   script: go vet
 
-build:
+.build_binary: &_binary
   stage: build
   dependencies:
     - get vendors
-  script:
-    - make
+  script: |
+    export GOTARGET=${CI_JOB_NAME##* }
+    export GOOS=${GOTARGET%%/*}
+    export GOARCH=${GOTARGET##*/}
+    export EXT=[[ "$GOOS" = "windows"]] && echo ".exe"
+    export BINARY=gitlab-ci-linter.${GOOS}-${GOARCH}${EXT}
+    make
+
+.build_binary_dev: &_binary_dev
+  <<:*_binary
+  only:
+   - branches
+  artifacts:
+    name: $BINARY
+    paths:
+      - $BINARY
+    expire_in: 1 week
+
+.build_binary_release: &_binary_release
+  <<:*_binary
+  only:
+   - tags
+  artifacts:
+    name: $BINARY
+    paths:
+      - $BINARY
+    expire_in: 1 year
+
+dev build linux/386: *_binary_dev
+dev build linux/amd64: *_binary_dev
+dev build linux/arm: *_binary_dev
+dev build linux/arm64: *_binary_dev
+dev build windows/386: *_binary_dev
+dev build windows/amd64: *_binary_dev
+dev build darwin/386: *_binary_dev
+dev build darwin/amd64: *_binary_dev
+
+release build linux/386: *_binary_release
+release build linux/amd64: *_binary_release
+release build linux/arm: *_binary_release
+release build linux/arm64: *_binary_release
+release build windows/386: *_binary_release
+release build windows/amd64: *_binary_release
+release build darwin/386: *_binary_release
+release build darwin/amd64: *_binary_release
