@@ -45,9 +45,9 @@ govet:
   only:
    - branches
   artifacts:
-    name: $BINARY
+    name: ${CI_JOB_NAME}
     paths:
-      - $BINARY
+      - gitlab-ci-linter.*
     expire_in: 1 week
 
 .build_binary_release: &_binary_release
@@ -55,9 +55,9 @@ govet:
   only:
    - tags
   artifacts:
-    name: $BINARY
+    name: ${CI_JOB_NAME}
     paths:
-      - $BINARY
+      - gitlab-ci-linter.*
     expire_in: 1 year
 
 dev build linux/386: *_binary_dev
