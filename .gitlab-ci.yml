@@ -6,9 +6,8 @@ stages:
   - build
 
 before_script:
-  - cd $GOPATH/src
-  - ln -s $CI_PROJECT_DIR
-  - cd $(basename $CI_PROJECT_DIR)
+  - ln -s $CI_PROJECT_DIR $GOPATH/src/
+  - cd $GOPATH/src/$(basename $CI_PROJECT_DIR)
 
 get vendors:
   stage: vendors
