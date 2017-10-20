@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6ecbc8b9-0384-4274-a49b-6a705f7d3a46" name="Default" comment="">
+    <list default="true" id="6ecbc8b9-0384-4274-a49b-6a705f7d3a46" name="Default" comment="Rename `BUILD_TIME` to `BUILDTIME`">
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/lint-gitlab-ci.sh" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Makefile" afterPath="$PROJECT_DIR$/Makefile" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.go" afterPath="$PROJECT_DIR$/main.go" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -43,7 +41,7 @@
       <file leaf-file-name="main.go" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/main.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="157">
+            <state relative-caret-position="-113">
               <caret line="576" column="32" lean-forward="false" selection-start-line="576" selection-start-column="32" selection-end-line="576" selection-end-column="32" />
               <folding>
                 <element signature="e#14#227#0" expanded="true" />
@@ -52,24 +50,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Makefile" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Makefile" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Makefile">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="870">
+            <state relative-caret-position="771">
               <caret line="58" column="21" lean-forward="false" selection-start-line="58" selection-start-column="21" selection-end-line="58" selection-end-column="21" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="README.md" pinned="false" current-in-tab="false">
+      <file leaf-file-name="README.md" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/README.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="FIRST">
-              <first_editor relative-caret-position="896">
-                <caret line="234" column="0" lean-forward="false" selection-start-line="234" selection-start-column="0" selection-end-line="234" selection-end-column="0" />
+              <first_editor relative-caret-position="-45">
+                <caret line="159" column="22" lean-forward="true" selection-start-line="159" selection-start-column="22" selection-end-line="159" selection-end-column="22" />
                 <folding>
-                  <marker date="1508480113000" expanded="true" signature="93:294" ph="This script use the [G...ml`. " />
+                  <marker date="1508480589000" expanded="true" signature="93:294" ph="This script use the [G...ml`. " />
                 </folding>
               </first_editor>
               <second_editor />
@@ -136,8 +134,8 @@
         <option value="$PROJECT_DIR$/ci/build-docker-image/README.md" />
         <option value="$PROJECT_DIR$/.gitlab-ci.yml" />
         <option value="$PROJECT_DIR$/main.go" />
-        <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/Makefile" />
+        <option value="$PROJECT_DIR$/README.md" />
       </list>
     </option>
   </component>
@@ -674,7 +672,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Disable colors if a non-color compatible TTY is detected" />
     <MESSAGE value="Init Go app" />
     <MESSAGE value="Use go dep for dependencies" />
     <MESSAGE value="Start refresh README for Go version" />
@@ -699,7 +696,8 @@
     <MESSAGE value="Make: improve clean" />
     <MESSAGE value="Fix vet warning (unreachable code)" />
     <MESSAGE value="CI: add go fmt and go vet check jobs" />
-    <option name="LAST_COMMIT_MESSAGE" value="CI: add go fmt and go vet check jobs" />
+    <MESSAGE value="Rename `BUILD_TIME` to `BUILDTIME`" />
+    <option name="LAST_COMMIT_MESSAGE" value="Rename `BUILD_TIME` to `BUILDTIME`" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -749,7 +747,7 @@
           <first_editor relative-caret-position="690">
             <caret line="46" column="46" lean-forward="false" selection-start-line="46" selection-start-column="46" selection-end-line="46" selection-end-column="46" />
             <folding>
-              <marker date="1508480113000" expanded="true" signature="93:294" ph="This script use the [G...ml`. " />
+              <marker date="1508480589000" expanded="true" signature="93:294" ph="This script use the [G...ml`. " />
             </folding>
           </first_editor>
           <second_editor />
@@ -874,7 +872,7 @@
           <first_editor relative-caret-position="1860">
             <caret line="124" column="112" lean-forward="false" selection-start-line="124" selection-start-column="0" selection-end-line="124" selection-end-column="112" />
             <folding>
-              <marker date="1508480113000" expanded="true" signature="93:294" ph="This script use the [G...ml`. " />
+              <marker date="1508480589000" expanded="true" signature="93:294" ph="This script use the [G...ml`. " />
             </folding>
           </first_editor>
           <second_editor />
@@ -927,7 +925,7 @@
           <first_editor relative-caret-position="1245">
             <caret line="83" column="0" lean-forward="false" selection-start-line="83" selection-start-column="0" selection-end-line="83" selection-end-column="0" />
             <folding>
-              <marker date="1508480113000" expanded="true" signature="93:294" ph="This script use the [G...ml`. " />
+              <marker date="1508480589000" expanded="true" signature="93:294" ph="This script use the [G...ml`. " />
             </folding>
           </first_editor>
           <second_editor />
@@ -958,7 +956,7 @@
           <first_editor relative-caret-position="795">
             <caret line="53" column="0" lean-forward="true" selection-start-line="53" selection-start-column="0" selection-end-line="53" selection-end-column="0" />
             <folding>
-              <marker date="1508480113000" expanded="true" signature="93:294" ph="This script use the [G...ml`. " />
+              <marker date="1508480589000" expanded="true" signature="93:294" ph="This script use the [G...ml`. " />
             </folding>
           </first_editor>
           <second_editor />
@@ -1053,14 +1051,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ci/build-docker-image/Dockerfile">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Gopkg.toml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -1104,6 +1094,14 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Makefile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="771">
+          <caret line="58" column="21" lean-forward="false" selection-start-line="58" selection-start-column="21" selection-end-line="58" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/.gitlab-ci.yml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="315">
@@ -1112,9 +1110,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/ci/build-docker-image/Dockerfile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/main.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="157">
+        <state relative-caret-position="-113">
           <caret line="576" column="32" lean-forward="false" selection-start-line="576" selection-start-column="32" selection-end-line="576" selection-end-column="32" />
           <folding>
             <element signature="e#14#227#0" expanded="true" />
@@ -1125,21 +1131,13 @@
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="FIRST">
-          <first_editor relative-caret-position="896">
-            <caret line="234" column="0" lean-forward="false" selection-start-line="234" selection-start-column="0" selection-end-line="234" selection-end-column="0" />
+          <first_editor relative-caret-position="-45">
+            <caret line="159" column="22" lean-forward="true" selection-start-line="159" selection-start-column="22" selection-end-line="159" selection-end-column="22" />
             <folding>
-              <marker date="1508480113000" expanded="true" signature="93:294" ph="This script use the [G...ml`. " />
+              <marker date="1508480589000" expanded="true" signature="93:294" ph="This script use the [G...ml`. " />
             </folding>
           </first_editor>
           <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Makefile">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="870">
-          <caret line="58" column="21" lean-forward="false" selection-start-line="58" selection-start-column="21" selection-end-line="58" selection-end-column="21" />
-          <folding />
         </state>
       </provider>
     </entry>
