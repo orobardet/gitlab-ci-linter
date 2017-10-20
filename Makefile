@@ -34,10 +34,10 @@ VERSION?=$(shell git describe --tags --always --match=v* 2> /dev/null || cat ${S
 # Revision or VCS hash to use when building the program. Can be long, it may be truncated by the program at
 REVISION?=$(shell git rev-parse HEAD)
 # Build date&time to use when building the programme. Unlikely needed to be overriden.
-BUILD_TIME?=$(shell date +%FT%T%z)
+BUILDTIME?=$(shell date +%FT%T%z)
 
 
-LDFLAGS=-X main.VERSION=${VERSION} -X main.REVISION=${REVISION} -X main.BUILD_TIME=${BUILD_TIME}
+LDFLAGS+=-X main.VERSION=${VERSION} -X main.REVISION=${REVISION} -X main.BUILDTIME=${BUILDTIME}
 ifeq ($(DEBUG),0)
   LDFLAGS+=-s -w
 endif

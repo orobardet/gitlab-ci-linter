@@ -28,7 +28,7 @@ var VERSION = "0.0.0-dev"
 var REVISION = "HEAD"
 
 // Build date and time of the program
-var BUILD_TIME = ""
+var BUILDTIME = ""
 
 // Name of the git repo directory
 const gitRepoDirectory = ".git"
@@ -587,7 +587,7 @@ func commandUninstall(c *cli.Context) error {
 
 func main() {
 	cli.VersionPrinter = func(c *cli.Context) {
-		fmt.Printf("version=%s revision=%s built on=%s\n", VERSION, REVISION, BUILD_TIME)
+		fmt.Printf("version=%s revision=%s built on=%s\n", VERSION, REVISION, BUILDTIME)
 	}
 
 	cli.AppHelpTemplate = `{{.Name}} - {{.Usage}}
