@@ -42,6 +42,8 @@ govet:
 
 .build_binary_dev: &_binary_dev
   <<: *_binary
+  variables:
+    DEBUG: "1"
   only:
    - branches
   artifacts:
