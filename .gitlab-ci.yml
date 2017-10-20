@@ -41,7 +41,7 @@ govet:
     make
 
 .build_binary_dev: &_binary_dev
-  <<:*_binary
+  <<: *_binary
   only:
    - branches
   artifacts:
@@ -51,7 +51,7 @@ govet:
     expire_in: 1 week
 
 .build_binary_release: &_binary_release
-  <<:*_binary
+  <<: *_binary
   only:
    - tags
   artifacts:

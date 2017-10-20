@@ -20,8 +20,8 @@
       <file leaf-file-name=".gitlab-ci.yml" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/.gitlab-ci.yml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="899">
-              <caret line="78" column="44" lean-forward="false" selection-start-line="78" selection-start-column="44" selection-end-line="78" selection-end-column="44" />
+            <state relative-caret-position="795">
+              <caret line="53" column="6" lean-forward="false" selection-start-line="53" selection-start-column="6" selection-end-line="53" selection-end-column="6" />
               <folding />
             </state>
           </provider>
@@ -539,8 +539,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Start refresh README for Go version" />
-    <MESSAGE value="Make: improve Makefile" />
     <MESSAGE value="Fix full version line &quot;built on&quot; label" />
     <MESSAGE value="Add `version` command" />
     <MESSAGE value="Enable bash completion for command line arguments" />
@@ -564,7 +562,9 @@
     <MESSAGE value="Rename `BUILD_TIME` to `BUILDTIME`" />
     <MESSAGE value="Remove old bash script, update README" />
     <MESSAGE value="README: update title" />
-    <option name="LAST_COMMIT_MESSAGE" value="README: update title" />
+    <MESSAGE value="CI: binary jobs" />
+    <MESSAGE value="CI: fix syntax" />
+    <option name="LAST_COMMIT_MESSAGE" value="CI: fix syntax" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -936,8 +936,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/.gitlab-ci.yml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="899">
-          <caret line="78" column="44" lean-forward="false" selection-start-line="78" selection-start-column="44" selection-end-line="78" selection-end-column="44" />
+        <state relative-caret-position="795">
+          <caret line="53" column="6" lean-forward="false" selection-start-line="53" selection-start-column="6" selection-end-line="53" selection-end-column="6" />
           <folding />
         </state>
       </provider>
