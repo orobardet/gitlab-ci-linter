@@ -38,6 +38,7 @@ govet:
     export GOARCH=${GOTARGET##*-}
     export EXT="$([[ "$GOOS" = "windows" ]] && echo ".exe")"
     export BINARY=gitlab-ci-linter.${GOOS}-${GOARCH}${EXT}
+    if [[ $VERSION ]] ; then export VERSION=${VERSION##v} ; fi
     make
 
 .build_binary_dev: &_binary_dev
@@ -54,10 +55,10 @@ govet:
 
 .build_binary_release: &_binary_release
   <<: *_binary
+  variables:
+    VERSION: ${CI_COMMIT_TAG}
   only:
    - tags
-  before_script:
-    - export VERSION=${CI_COMMIT_TAG#v}
   artifacts:
     name: "${CI_JOB_NAME}"
     paths:
