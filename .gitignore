@@ -4,3 +4,4 @@
 /lint-gitlab-ci
 .build/
 *.exe
+/.idea/workspace.xml
