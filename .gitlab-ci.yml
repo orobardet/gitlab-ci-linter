@@ -56,6 +56,8 @@ govet:
   <<: *_binary
   only:
    - tags
+  before_script:
+    - export VERSION=${CI_COMMIT_TAG#v}
   artifacts:
     name: ${CI_JOB_NAME}
     paths:
