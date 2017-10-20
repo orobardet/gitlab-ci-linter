@@ -34,9 +34,9 @@ govet:
     - get vendors
   script: |
     export GOTARGET=${CI_JOB_NAME##* }
-    export GOOS=${GOTARGET%%/*}
-    export GOARCH=${GOTARGET##*/}
-    export EXT=[[ "$GOOS" = "windows"]] && echo ".exe"
+    export GOOS=${GOTARGET%%-*}
+    export GOARCH=${GOTARGET##*-}
+    export EXT="$([[ "$GOOS" = "windows"]] && echo ".exe")"
     export BINARY=gitlab-ci-linter.${GOOS}-${GOARCH}${EXT}
     make
 
@@ -47,7 +47,7 @@ govet:
   only:
    - branches
   artifacts:
-    name: ${CI_JOB_NAME}
+    name: "${CI_JOB_NAME}"
     paths:
       - gitlab-ci-linter.*
     expire_in: 1 week
@@ -59,25 +59,25 @@ govet:
   before_script:
     - export VERSION=${CI_COMMIT_TAG#v}
   artifacts:
-    name: ${CI_JOB_NAME}
+    name: "${CI_JOB_NAME}"
     paths:
       - gitlab-ci-linter.*
     expire_in: 1 year
 
-dev build linux/386: *_binary_dev
-dev build linux/amd64: *_binary_dev
-dev build linux/arm: *_binary_dev
-dev build linux/arm64: *_binary_dev
-dev build windows/386: *_binary_dev
-dev build windows/amd64: *_binary_dev
-dev build darwin/386: *_binary_dev
-dev build darwin/amd64: *_binary_dev
+dev build linux-386: *_binary_dev
+dev build linux-amd64: *_binary_dev
+dev build linux-arm: *_binary_dev
+dev build linux-arm64: *_binary_dev
+dev build windows-386: *_binary_dev
+dev build windows-amd64: *_binary_dev
+dev build darwin-386: *_binary_dev
+dev build darwin-amd64: *_binary_dev
 
-release build linux/386: *_binary_release
-release build linux/amd64: *_binary_release
-release build linux/arm: *_binary_release
-release build linux/arm64: *_binary_release
-release build windows/386: *_binary_release
-release build windows/amd64: *_binary_release
-release build darwin/386: *_binary_release
-release build darwin/amd64: *_binary_release
+release build linux-386: *_binary_release
+release build linux-amd64: *_binary_release
+release build linux-arm: *_binary_release
+release build linux-arm64: *_binary_release
+release build windows-386: *_binary_release
+release build windows-amd64: *_binary_release
+release build darwin-386: *_binary_release
+release build darwin-amd64: *_binary_release
