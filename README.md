@@ -1,4 +1,4 @@
-# Gitlab-ci.yml linter tool
+# .gitlab-ci.yml lint helper tool
 
 > Goodbye "yaml invalid" pipeline errors, and don't come back!
 
