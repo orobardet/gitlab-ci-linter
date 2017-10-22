@@ -92,6 +92,9 @@ The self installation is pretty simple: it will just create a `.git/hooks/pre-co
 > But moving the executable will broke commit in these repo until you manually remove the hook and reinstall it => Not so good...  
 > Conclusion: install the tool in a safe and viable place :)
 
+> **Note for Windows users:** Windows require administrator privileges to create symbolic links. So the `gitlab-ci-linter install` 
+> command will only work if run with administrator privileges. 
+
 It won't be able to self install if a `.git/hooks/pre-commit` already exists (and is not a link to itself).
  
 Self uninstall will only works if `.git/hooks/pre-commit` is a link to itself.
