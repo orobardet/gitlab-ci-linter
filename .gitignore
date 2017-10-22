@@ -1,1 +1,7 @@
-/.idea/
+# don't commit binaries
+/gitlab-ci-linter
+/vendor/
+/lint-gitlab-ci
+.build/
+*.exe
+/.idea/workspace.xml
