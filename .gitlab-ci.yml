@@ -3,6 +3,7 @@ image: registry.gitlab.com/orobardet/gitlab-ci-linter/build
 stages:
   - vendors
   - checks
+  - tests
   - build
 
 before_script:
@@ -26,6 +27,10 @@ gofmt:
 govet:
   stage: checks
   script: go vet
+
+go test:
+  stage: tests
+  script: go test
 
 .build_binary: &_binary
   stage: build

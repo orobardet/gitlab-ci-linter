@@ -41,7 +41,8 @@ LDFLAGS+=-X main.VERSION=${VERSION} -X main.REVISION=${REVISION} -X main.BUILDTI
 ifeq ($(DEBUG),0)
   LDFLAGS+=-s -w
 endif
-SOURCES := $(shell find $(SOURCEDIR) -name '*.go' -not -path "$(SOURCEDIR)/vendor/*")
+SOURCES := $(shell find $(SOURCEDIR) -name '*.go' -not -path "$(SOURCEDIR)/vendor/*" -not -name '*_test.go')
+TESTSOURCES := $(shell find $(SOURCEDIR) -name '*_test.go' -not -path "$(SOURCEDIR)/vendor/*")
 
 .DEFAULT_GOAL: all
 
@@ -51,6 +52,9 @@ all: build
 build: $(BINARY)
 
 rebuild: clean build
+
+test: $(TESTSOURCES)
+	go test
 
 .PHONY: run
 run: $(BINARY)
