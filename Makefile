@@ -28,6 +28,7 @@ ifeq (run,$(firstword $(MAKECMDGOALS)))
 endif
 
 DEBUG:=0
+RELEASE:=0
 
 # Version number to use when building the program
 VERSION?=$(shell git describe --tags --always --match=v* 2> /dev/null || cat ${SOURCEDIR}/VERSION 2> /dev/null || echo v0.0.0)-dev
@@ -35,7 +36,6 @@ VERSION?=$(shell git describe --tags --always --match=v* 2> /dev/null || cat ${S
 REVISION?=$(shell git rev-parse HEAD)
 # Build date&time to use when building the programme. Unlikely needed to be overriden.
 BUILDTIME?=$(shell date +%FT%T%z)
-
 
 LDFLAGS+=-X main.VERSION=${VERSION} -X main.REVISION=${REVISION} -X main.BUILDTIME=${BUILDTIME}
 ifeq ($(DEBUG),0)
@@ -46,6 +46,9 @@ TESTSOURCES := $(shell find $(SOURCEDIR) -name '*_test.go' -not -path "$(SOURCED
 
 .DEFAULT_GOAL: all
 
+$(BINARY): $(SOURCES)
+	go build -ldflags "${LDFLAGS}" -o ${BINARY}
+	if test $(RELEASE) -eq 1 ; then upx -9f --color $(BINARY) ; fi
 
 all: build
 
@@ -59,9 +62,6 @@ test: $(TESTSOURCES)
 .PHONY: run
 run: $(BINARY)
 	$(BINARY) $(RUNARGS)
-
-$(BINARY): $(SOURCES)
-	go build -ldflags "${LDFLAGS}" -o ${BINARY}
 
 .PHONY: install
 install:

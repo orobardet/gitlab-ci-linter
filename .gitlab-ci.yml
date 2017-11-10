@@ -61,6 +61,7 @@ go test:
   <<: *_binary
   variables:
     VERSION: ${CI_COMMIT_TAG}
+    RELEASE: "1"
   only:
    - tags
   artifacts:
