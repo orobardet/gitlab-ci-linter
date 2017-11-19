@@ -6,6 +6,9 @@ stages:
   - tests
   - build
 
+variables:
+  AF_BINARY_URL: "https://api.bintray.com/content/orobardet/gitlab-ci-linter/gitlab-ci-linter"
+
 before_script:
   - ln -s $CI_PROJECT_DIR $GOPATH/src/
   - cd $GOPATH/src/$(basename $CI_PROJECT_DIR)
@@ -36,14 +39,14 @@ go test:
   stage: build
   dependencies:
     - get vendors
-  script: |
-    export GOTARGET=${CI_JOB_NAME##* }
-    export GOOS=${GOTARGET%%-*}
-    export GOARCH=${GOTARGET##*-}
-    export EXT="$([[ "$GOOS" = "windows" ]] && echo ".exe")"
-    export BINARY=gitlab-ci-linter.${GOOS}-${GOARCH}${EXT}
-    if [[ $VERSION ]] ; then export VERSION=${VERSION##v} ; fi
-    make
+  script:
+    - export GOTARGET=${CI_JOB_NAME##* }
+    - export GOOS=${GOTARGET%%-*}
+    - export GOARCH=${GOTARGET##*-}
+    - export EXT="$([[ "$GOOS" = "windows" ]] && echo ".exe")"
+    - export BINARY=gitlab-ci-linter.${GOOS}-${GOARCH}${EXT}
+    - if [[ $VERSION ]] ; then export VERSION=${VERSION##v} ; fi
+    - make
 
 .build_binary_dev: &_binary_dev
   <<: *_binary
@@ -64,6 +67,8 @@ go test:
     RELEASE: "1"
   only:
    - tags
+  after_script:
+    - curl -T $BINARY -u${AFI_API_USER}:${AF_API_KEY} "${AF_BINARY_URL}/${VERSION}/$(basename $BINARY)?override=1&publish=1"
   artifacts:
     name: "${CI_JOB_NAME}"
     paths:
