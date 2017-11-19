@@ -5,6 +5,7 @@
 # v2.0.0
 
 - Full rewrite in Go
+- Et patati et patata (#3)
 
 # v1.0.0
 

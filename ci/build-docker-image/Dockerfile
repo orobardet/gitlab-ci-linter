@@ -9,6 +9,9 @@ RUN apt-get update -y && \
 
 FROM golang:1.9
 
+ADD  https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 /usr/local/bin/jq
+RUN chmod +x /usr/local/bin/jq
+
 COPY --from=upxbuilder /upxtmp/upx /usr/local/bin/upx
 RUN chmod +x /usr/local/bin/upx
 
