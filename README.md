@@ -20,7 +20,7 @@ To install, just [download the binary](https://gitlab.com/orobardet/gitlab-ci-li
 Upgrade is just overriding the binary with a new one.
 
 > For now, releases only build binaries for some common platforms, not all supported by Go.  
-> If your is not available, you can try building it by yourself and check if it works (it should, but never tested).  
+> If yours is not available, you can try building it by yourself and check if it works (it should, but never tested).  
 > Feedbacks are welcome :)
 
 ## Requirements
