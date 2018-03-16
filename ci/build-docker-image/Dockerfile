@@ -1,4 +1,4 @@
-FROM golang:1.9 AS upxbuilder
+FROM golang:1.10 AS upxbuilder
 
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends xz-utils && \
@@ -7,7 +7,7 @@ RUN apt-get update -y && \
     wget -O upx.tar.xz https://github.com/upx/upx/releases/download/v3.94/upx-3.94-amd64_linux.tar.xz && \
     tar --strip-components=1 -Jxvf upx.tar.xz
 
-FROM golang:1.9
+FROM golang:1.10
 
 ADD  https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 /usr/local/bin/jq
 RUN chmod +x /usr/local/bin/jq
