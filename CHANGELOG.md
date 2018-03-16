@@ -2,6 +2,7 @@
 
 - Compress release binaries with UPX to reduce size (#4)
 - Binary release are uploaded to bintray (#2)
+- Upgrade to Go 1.10
 
 # v2.0.0
 
