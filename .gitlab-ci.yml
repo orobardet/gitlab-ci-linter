@@ -15,8 +15,9 @@ variables:
   CI_GITLAB_URL: "https://gitlab.com"
 
 before_script:
-  - ln -s $CI_PROJECT_DIR $GOPATH/src/
-  - cd $GOPATH/src/$(basename $CI_PROJECT_DIR)
+  - mkdir -p $GOPATH/src/gitlab.com/orobardet
+  - ln -s $CI_PROJECT_DIR $GOPATH/src/gitlab.com/orobardet/gitlab-ci-linter
+  - cd $GOPATH/src/gitlab.com/orobardet/gitlab-ci-linter
 
 get vendors:
   stage: vendors
