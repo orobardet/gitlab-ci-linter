@@ -18,6 +18,13 @@ RUN chmod +x /usr/local/bin/jq
 COPY --from=upxbuilder /upxtmp/upx /usr/local/bin/upx
 RUN chmod +x /usr/local/bin/upx
 
+# Install Snyk
+RUN curl -sL https://deb.nodesource.com/setup_9.x | bash - && \
+    apt-get install -y --no-install-recommends nodejs && \
+    npm install --global snyk && \
+    npm cache clean --force && \
+    apt-get clean && rm -fr /tmp/* /var/lib/apt/*
+
 # Set a local go user and use it
 ENV GOUSER=go
 RUN adduser --gecos "" --disabled-password $GOUSER

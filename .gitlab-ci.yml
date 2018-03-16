@@ -37,6 +37,14 @@ govet:
   stage: checks
   script: go vet
 
+snyk:
+  stage: checks
+  dependencies:
+    - get vendors
+  script:
+    - snyk test
+    - snyk monitor
+
 go test:
   stage: tests
   script: go test
