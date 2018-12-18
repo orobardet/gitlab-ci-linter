@@ -1,3 +1,7 @@
+# v2.1.1
+
+- Allow insecure connection to GitLab
+
 # v2.1.0
 
 - Compress release binaries with UPX to reduce size (#4)

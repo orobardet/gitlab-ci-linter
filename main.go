@@ -1,12 +1,10 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/go-ini/ini"
-	"github.com/urfave/cli"
 	"io/ioutil"
 	"math"
 	"net/http"
@@ -16,6 +14,10 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/fatih/color"
+	"github.com/go-ini/ini"
+	"github.com/urfave/cli"
 )
 
 // Application name
@@ -47,6 +49,9 @@ const gitlabApiCiLintPath = "/api/v4/ci/lint"
 
 // The Gitlab instance root URL to use.
 var gitlabRootUrl string
+
+// Allow insecure connection to GitLab API
+var gitlabInsecure bool
 
 // The full path of the gitlab-ci file to check, if given at calls.
 // If no path is given at call, the variable will be an empty string, and the program will search for the file
@@ -168,10 +173,17 @@ func httpiseRemoteUrl(remoteUrl string) string {
 
 func initGitlabHttpClientRequest(method string, url string, content string) (*http.Client, *http.Request, error) {
 	var httpClient *http.Client
+	var httpTransport *http.Transport
 	var req *http.Request
 
+	httpTransport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: gitlabInsecure,
+		},
+	}
 	httpClient = &http.Client{
-		Timeout: time.Second * time.Duration(httpRequestTimeout),
+		Transport: httpTransport,
+		Timeout:   time.Second * time.Duration(httpRequestTimeout),
 	}
 
 	req, err := http.NewRequest(method, url, strings.NewReader(content))
@@ -631,6 +643,12 @@ Usage:
 			Usage:       "root `URL` of the Gitlab instance to use API",
 			EnvVar:      "GCL_GITLAB_URL",
 			Destination: &gitlabRootUrl,
+		},
+		cli.BoolFlag{
+			Name:        "insecure,k",
+			Usage:       "allow insecure connection to GitLab API",
+			EnvVar:      "GCL_GITLAB_INSECURE",
+			Destination: &gitlabInsecure,
 		},
 		cli.StringFlag{
 			Name:        "ci-file,f",
