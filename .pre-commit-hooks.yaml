@@ -1,0 +1,9 @@
+# Allows gitlab-ci-linter to be used as a pre-commit-hook with pre-commit
+# https://pre-commit.com/#pre-commit-configyaml---hooks
+- id: gitlab-ci-linter
+  name: gitlab ci linter
+  description: Check the .gitlab-ci.yml for valid syntax
+  entry: gitlab-ci-linter
+  language: golang
+  types: [yaml]
+  files: .gitlab-ci.yml$
