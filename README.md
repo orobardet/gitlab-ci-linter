@@ -104,6 +104,19 @@ Self uninstall will only works if `.git/hooks/pre-commit` is a link to itself.
 If you are already using a pre-commit hook, you'll have to install manually: simply add a call to the tool in your 
 existing pre-commit script.
 
+### Integration with the pre-commit project
+
+There is also native support for using gitlab-ci-linter as a pre-commit-hook in
+the [pre-commit project](https://pre-commit.com/). If you're using pre-commit,
+include this tool in your `.pre-commit-config.yaml` like this:
+
+```
+  - repo: https://gitlab.com/orobardet/gitlab-ci-linter/
+    rev: < you define a git revision or tag here >
+    hooks:
+      - id: gitlab-ci-linter
+```
+
 ## Things to know
 
 - If no `.gitlab-ci.yml` is detected in the git repository root, the tool does noting (if installed as pre-commit hook, it will not prevent the commit).

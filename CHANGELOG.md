@@ -2,6 +2,7 @@
 
 - Upgrade dependencies to latest versions (#10)
 - Upgrade to go 1.13 and go modules. Thanks @sascha-andres (!9)
+- Introduce support for use with pre-commit.com
 
 # v2.1.0
 
