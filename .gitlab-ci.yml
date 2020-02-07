@@ -1,4 +1,4 @@
-image: registry.gitlab.com/orobardet/gitlab-ci-linter/build
+image: registry.gitlab.com/orobardet/gitlab-ci-linter/build:1.13
 
 stages:
   - vendors
