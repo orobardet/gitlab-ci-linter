@@ -14,21 +14,6 @@ variables:
   AF_BINARY_PACKAGE: "gitlab-ci-linter"
   CI_GITLAB_URL: "https://gitlab.com"
 
-before_script:
-  - mkdir -p $GOPATH/src/gitlab.com/orobardet
-  - ln -s $CI_PROJECT_DIR $GOPATH/src/gitlab.com/orobardet/gitlab-ci-linter
-  - cd $GOPATH/src/gitlab.com/orobardet/gitlab-ci-linter
-
-get vendors:
-  stage: vendors
-  script:
-    - dep ensure
-  artifacts:
-    name: "${CI_JOB_NAME}_${CI_COMMIT_REF_NAME}"
-    paths:
-      - vendor/
-    expire_in: 1 hour
-
 gofmt:
   stage: checks
   script: gofmt -s -l -e $(find . -name "*.go" -type f -not -path "./vendor/*")
@@ -39,8 +24,6 @@ govet:
 
 snyk:
   stage: checks
-  dependencies:
-    - get vendors
   script:
     - snyk test
     - snyk monitor
@@ -53,8 +36,6 @@ go test:
 
 .build_binary: &_binary
   stage: build
-  dependencies:
-    - get vendors
   script:
     - export GOTARGET=${CI_JOB_NAME##* }
     - export GOOS=${GOTARGET%%-*}
