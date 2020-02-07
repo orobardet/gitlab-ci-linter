@@ -28,7 +28,7 @@ snyk:
     - snyk test
     - snyk monitor
   only:
-    - tags@orobardet/gitlab-ci-linter
+    - branches@orobardet/gitlab-ci-linter
 
 go test:
   stage: tests
