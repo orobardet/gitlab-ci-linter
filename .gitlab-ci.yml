@@ -44,6 +44,8 @@ snyk:
   script:
     - snyk test
     - snyk monitor
+  only:
+    - tags@orobardet/gitlab-ci-linter
 
 go test:
   stage: tests
@@ -80,7 +82,7 @@ go test:
     VERSION: ${CI_COMMIT_TAG}
     RELEASE: "1"
   only:
-   - tags
+    - tags@orobardet/gitlab-ci-linter
   after_script:
     - curl -T $BINARY -u${AFI_API_USER}:${AF_API_KEY} "$AF_BINARY_URL/content/$AF_BINARY_SUBJECT/$AF_BINARY_REPO/$AF_BINARY_PACKAGE/${VERSION}/$(basename $BINARY)?override=1&publish=1"
   artifacts:
@@ -113,4 +115,4 @@ Update Release note:
     VERSION: ${CI_COMMIT_TAG}
   script: ci/update-gitlab-release.sh
   only:
-    - tags
+    - tags@orobardet/gitlab-ci-linter
