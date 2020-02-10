@@ -130,12 +130,20 @@ func findGitlabCiFile(directory string) (string, error) {
 	}
 }
 
-// Extract the orign remote remote url from a git repo directory
-func getGitOriginRemoteUrl(gitDirectory string) (string, error) {
+// Load git config file from git repository directory
+func loadGitCfg(gitDirectory string) (*ini.File, error) {
 	cfg, err := ini.Load(path.Join(gitDirectory, gitRepoConfigFilename))
-
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
+// Extract the origin remote remote url from a git config file
+func getGitOriginRemoteUrl(gitDirectory string) (string, error) {
+	cfg, err := loadGitCfg(gitDirectory)
+	if err != nil {
 		return "", err
 	}
 
@@ -294,21 +302,18 @@ func processPathArgument(path string) {
 	}
 }
 
-func guessGitlabAPIFromGitRepo(gitRepoPath string) (apiRootUrl string, err error) {
-	remoteUrl, err := getGitOriginRemoteUrl(gitRepoPath)
-	if err == nil {
-		httpRemoteUrl, err := checkGitlabAPIUrl(httpiseRemoteUrl(remoteUrl))
-		if err != nil {
-			return "", err
+func guessGitlabAPIFromGitRemoteUrl(remoteUrl string) (apiRootUrl string, err error) {
+	httpRemoteUrl, err := checkGitlabAPIUrl(httpiseRemoteUrl(remoteUrl))
+	if err != nil {
+		return "", err
+	}
+	if httpRemoteUrl != "" {
+		apiRootUrl = httpRemoteUrl
+		if verboseMode {
+			fmt.Printf("API url found: %s\n", httpRemoteUrl)
 		}
-		if httpRemoteUrl != "" {
-			apiRootUrl = httpRemoteUrl
-			if verboseMode {
-				fmt.Printf("API url found: %s\n", httpRemoteUrl)
-			}
-		} else {
-			return "", errors.New("Unknown error occurs")
-		}
+	} else {
+		return "", errors.New("Unknown error occurs")
 	}
 
 	return
@@ -352,15 +357,29 @@ func commandCheck(c *cli.Context) error {
 		gitRepoPath, _ = findGitRepo(directoryRoot)
 	}
 
-	// Extract origin remote from repository en guess gitlab url
-	if gitRepoPath != "" {
-		gitlabRootUrl, err = guessGitlabAPIFromGitRepo(gitRepoPath)
-		if err != nil {
-			return cli.NewExitError(fmt.Sprintf("No valid and responding Gitlab API URL found from repository's origin remote: %s", err), 5)
-		}
-	} else {
+	if gitRepoPath == "" {
+		// Warn user that we're defaulting because no git repo was found
 		yellow := color.New(color.FgYellow).SprintFunc()
 		fmt.Fprintf(color.Output, yellow("No GIT repository found, using default Gitlab API '%s'\n"), gitlabRootUrl)
+	} else {
+		// Extract origin remote url from repository config
+		remoteUrl, err := getGitOriginRemoteUrl(gitRepoPath)
+		if err != nil {
+			return cli.NewExitError(fmt.Sprintf("Failed to find origin remote url in repository: %s", err), 5)
+		}
+
+		// Check if we can use the origin remote url
+		if remoteUrl != "" {
+			// Guess gitlab url based on remote url
+			gitlabRootUrl, err = guessGitlabAPIFromGitRemoteUrl(remoteUrl)
+			if err != nil {
+				return cli.NewExitError(fmt.Sprintf("No valid and responding Gitlab API URL found from repository's origin remote: %s", err), 5)
+			}
+		} else {
+			// Warn user that we're defaulting because no origin remote was found
+			yellow := color.New(color.FgYellow).SprintFunc()
+			fmt.Fprintf(color.Output, yellow("No origin remote found in repository, using default Gitlab API '%s'\n"), gitlabRootUrl)
+		}
 	}
 
 	fmt.Printf("Validating %s... ", relativeGitlabCiFilePath)
@@ -513,11 +532,23 @@ func commandInstall(c *cli.Context) error {
 		fmt.Printf("Git repository found: %s\n", gitRepoPath)
 	}
 
-	// Extract origin remote from repository en guess gitlab url
-	_, err = guessGitlabAPIFromGitRepo(gitRepoPath)
-
+	// Extract origin remote url from repository config
+	remoteUrl, err := getGitOriginRemoteUrl(gitRepoPath)
 	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("No valid and responding Gitlab API URL found from repository's origin remote, can't install a hook"), 5)
+		return cli.NewExitError(fmt.Sprintf("Failed to find origin remote url in repository: %s", err), 5)
+	}
+
+	// Check if we can use the origin remote url
+	if remoteUrl != "" {
+		// Guess gitlab url based on remote url
+		_, err = guessGitlabAPIFromGitRemoteUrl(remoteUrl)
+		if err != nil {
+			return cli.NewExitError(fmt.Sprintf("No valid and responding Gitlab API URL found from repository's origin remote, can't install a hook"), 5)
+		}
+	} else if verboseMode {
+		// Warn user that we're defaulting because no origin remote was found
+		yellow := color.New(color.FgYellow).SprintFunc()
+		fmt.Fprintf(color.Output, yellow("No origin remote found in repository, will be using default Gitlab API '%s'\n"), gitlabRootUrl)
 	}
 
 	status, err := createGitHookLink(gitRepoPath, "pre-commit")
