@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/go-ini/ini"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 	"io/ioutil"
 	"math"
 	"net/http"
@@ -611,7 +611,7 @@ Usage:
 	app := cli.NewApp()
 	app.Name = APPNAME
 	app.Version = fmt.Sprintf("%s (%s)", VERSION, REVISION[:int(math.Min(float64(len(REVISION)), 7))])
-	app.Authors = []cli.Author{
+	app.Authors = []*cli.Author{
 		{Name: "Olivier ROBARDET"},
 	}
 	app.Usage = "lint your .gitlab-ci.yml using the Gitlab lint API"
@@ -625,51 +625,51 @@ Usage:
 	app.ArgsUsage = "[PATH]"
 	app.Description = pathArgumentDescription
 	app.Flags = []cli.Flag{
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "gitlab-url,u",
 			Value:       defaultGitlabRootUrl,
 			Usage:       "root `URL` of the Gitlab instance to use API",
-			EnvVar:      "GCL_GITLAB_URL",
+			EnvVars:     []string{"GCL_GITLAB_URL"},
 			Destination: &gitlabRootUrl,
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "ci-file,f",
 			Usage:       "`FILE` is the relative or absolute path to the gitlab-ci file",
-			EnvVar:      "GCL_GITLAB_CI_FILE",
+			EnvVars:     []string{"GCL_GITLAB_CI_FILE"},
 			Destination: &gitlabCiFilePath,
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "directory,d",
 			Value:       ".",
 			Usage:       "`DIR` is the directory from where to search for gitlab-ci file and git repository",
-			EnvVar:      "GCL_DIRECTORY",
+			EnvVars:     []string{"GCL_DIRECTORY"},
 			Destination: &directoryRoot,
 		},
-		cli.UintFlag{
+		&cli.UintFlag{
 			Name:        "timeout,t",
 			Value:       httpRequestTimeout,
 			Usage:       "timeout in second after which http request to Gitlab API will timeout (and the program will fails)",
-			EnvVar:      "GCL_TIMEOUT",
+			EnvVars:     []string{"GCL_TIMEOUT"},
 			Destination: &httpRequestTimeout,
 		},
-		cli.BoolFlag{
-			Name:   "no-color,n",
-			Usage:  "don't color output. By defaults the output is colorized if a compatible terminal is detected.",
-			EnvVar: "GCL_NOCOLOR",
+		&cli.BoolFlag{
+			Name:    "no-color,n",
+			Usage:   "don't color output. By defaults the output is colorized if a compatible terminal is detected.",
+			EnvVars: []string{"GCL_NOCOLOR"},
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:        "verbose,v",
 			Usage:       "verbose mode",
-			EnvVar:      "GCL_VERBOSE",
+			EnvVars:     []string{"GCL_VERBOSE"},
 			Destination: &verboseMode,
 		},
 	}
-	cli.VersionFlag = cli.BoolFlag{
+	cli.VersionFlag = &cli.BoolFlag{
 		Name:  "version, V",
 		Usage: "print the version information",
 	}
 
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		{
 			Name:        "check",
 			Aliases:     []string{"c"},
@@ -698,8 +698,9 @@ Usage:
 			Name:    "version",
 			Aliases: []string{"v"},
 			Usage:   "Print the version information",
-			Action: func(c *cli.Context) {
+			Action: func(c *cli.Context) error {
 				cli.ShowVersion(c)
+				return nil
 			},
 		},
 	}

@@ -3,10 +3,12 @@ module gitlab.com/orobardet/gitlab-ci-linter
 go 1.13
 
 require (
-	github.com/fatih/color v1.5.0
-	github.com/go-ini/ini v1.29.2
-	github.com/mattn/go-colorable v0.0.9
-	github.com/mattn/go-isatty v0.0.3
-	github.com/urfave/cli v1.20.0
-	golang.org/x/sys v0.0.0-20171017063910-8dbc5d05d6ed
+	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
+	github.com/fatih/color v1.9.0
+	github.com/go-ini/ini v1.52.0
+	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/smartystreets/goconvey v1.6.4 // indirect
+	github.com/urfave/cli/v2 v2.1.1
+	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
+	gopkg.in/ini.v1 v1.52.0 // indirect
 )
