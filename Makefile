@@ -27,8 +27,8 @@ ifeq (run,$(firstword $(MAKECMDGOALS)))
   $(eval $(RUNARGS):;@:)
 endif
 
-DEBUG:=0
-RELEASE:=0
+DEBUG?=0
+RELEASE?=0
 
 # Version number to use when building the program
 VERSION?=$(shell git describe --tags --always --match=v* 2> /dev/null || cat ${SOURCEDIR}/VERSION 2> /dev/null || echo v0.0.0)-dev

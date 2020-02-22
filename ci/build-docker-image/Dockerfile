@@ -5,7 +5,7 @@ RUN apt-get update -y && \
     apt-get install -y --no-install-recommends xz-utils && \
     mkdir /upxtmp && \
     cd /upxtmp && \
-    wget -O upx.tar.xz https://github.com/upx/upx/releases/download/v3.94/upx-3.94-amd64_linux.tar.xz && \
+    wget -O upx.tar.xz https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz && \
     tar --strip-components=1 -Jxvf upx.tar.xz
 
 FROM golang:1.13

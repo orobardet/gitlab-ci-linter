@@ -1,15 +1,11 @@
-# Next
+# v2.1.0
 
 - Upgrade dependencies to latest versions (#10)
 - Upgrade to go 1.13 and go modules. Thanks @sascha-andres (!9)
 - Introduce support for use with pre-commit.com
 - Add support for git repos without a remote named "origin". Thanks @rubensayshi (!11)
-
-# v2.1.0
-
 - Compress release binaries with UPX to reduce size (#4)
-- Binary release are uploaded to bintray (#2)
-- Upgrade to Go 1.10
+- Binary releases are uploaded to bintray (#2)
 
 # v2.0.0
 
