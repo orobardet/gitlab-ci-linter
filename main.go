@@ -57,6 +57,9 @@ var gitlabCiFilePath string
 // Directory to start searching for gitlab-ci file and git repository
 var directoryRoot string
 
+// Personal access token for accessing the repository when you have two factor authentication (2FA) enabled.
+var personalAccessToken string
+
 // Timeout in seconds for HTTP request to the Gitlab API
 // Request will fail if lasting more than the timeout
 var httpRequestTimeout uint = 5
@@ -186,6 +189,9 @@ func initGitlabHttpClientRequest(method string, url string, content string) (*ht
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("User-Agent", fmt.Sprintf("%s/%s", APPNAME, VERSION))
+	if personalAccessToken != "" {
+		req.Header.Add("PRIVATE-TOKEN", personalAccessToken)
+	}
 
 	return httpClient, req, err
 }
@@ -675,6 +681,13 @@ Usage:
 			Usage:       "`DIR` is the directory from where to search for gitlab-ci file and git repository",
 			EnvVars:     []string{"GCL_DIRECTORY"},
 			Destination: &directoryRoot,
+		},
+		&cli.StringFlag{
+			Name:        "personal-access-token,p",
+			Value:       "",
+			Usage:       "personal access token `TOK` for accessing repositories when you have 2FA enabled",
+			EnvVars:     []string{"GCL_PERSONAL_ACCESS_TOKEN"},
+			Destination: &personalAccessToken,
 		},
 		&cli.UintFlag{
 			Name:        "timeout,t",

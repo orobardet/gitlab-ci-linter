@@ -136,6 +136,7 @@ Global options:
    --gitlab-url URL, -u URL   root URL of the Gitlab instance to use API (default: "https://gitlab.com") [$GCL_GITLAB_URL]
    --ci-file FILE, -f FILE    FILE is the relative or absolute path to the gitlab-ci file [$GCL_GITLAB_CI_FILE]
    --directory DIR, -d DIR    DIR is the directory from where to search for gitlab-ci file and git repository (default: ".") [$GCL_DIRECTORY]
+   --personal-access-token TOK -p TOK  personal access token TOK for accessing repositories when you have 2FA enabled [$GCL_PERSONAL_ACCESS_TOKEN]
    --timeout value, -t value  timeout in second after which http request to Gitlab API will timeout (and the program will fails) (default: 5) [$GCL_TIMEOUT]
    --no-color, -n             don't color output. By defaults the output is colorized if a compatible terminal is detected. [$GCL_NOCOLOR]
    --verbose, -v              verbose mode [$GCL_VERBOSE]
