@@ -1,3 +1,7 @@
+# Next
+
+- Add a `--personal-access-token` option specify a personal access token (e.g. when 2FA is enabled). Thanks @fhitche1 (!13)
+
 # v2.1.0
 
 - Upgrade dependencies to latest versions (#10)

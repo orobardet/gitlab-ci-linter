@@ -119,9 +119,10 @@ include this tool in your `.pre-commit-config.yaml` like this:
 
 ## Things to know
 
-- If no `.gitlab-ci.yml` is detected in the git repository root, the tool does noting (if installed as pre-commit hook, it will not prevent the commit).
+- If no `.gitlab-ci.yml` is detected in the git repository root, the tool does nothing (if installed as pre-commit hook, it will not prevent the commit).
 - This tool works (or should) with any instance of Gitlab: gitlab.com or custom instance.
 - It uses the url of the remote `origin` to guess the url of the Gitlab to use (also works if the remote is ssh, as soon as the Gitlab respond on HTTP using the same FQDN as ssh)
+- If the `/ci/lint` API is not publicly accessible (e.g. 2FA is enforced), you can specify a personal access token using `--personal-access-token|-p` option or `GCL_PERSONAL_ACCESS_TOKEN` environment variable. The token must have `api` scope. 
 
 ## --help 
 
@@ -256,8 +257,8 @@ The Makefile accept the following targets:
 - `clean` 
 - `rebuild`: force the rebuild from scratch (simply runs `clean` followed by `build`)
 - `install`: launch `go install`
-- `run`: run the program, after building it if needed. Arguments for the program can be passed after the `run target` 
-or using the using the `RUNARGS` environment variable.
+- `run`: run the program, after building it, if needed. Arguments for the program can be passed after the `run target` 
+or using the `RUNARGS` environment variable.
 
 ```shell
 # The following commands are equivalent:
@@ -271,4 +272,4 @@ The Makefile also accept the following environment variables:
 - `VERSION`: the version number to include in the program (by default use the last git tag if any, else the short commit hash, both suffixed by `-dev`)
 - `REVISION`: the revision string to include in the program, typically the VCS commit hash (by default the git full commit hash) 
 - `BUILDTIME`: the build date and time (by default the current ones, of course)
-- `DEBUG`: binaries a build without debug symbol to reduce their size (`-s -w` link options) ; setting `DEBUG` to a non-zero value will build binary with the debug symbols (0 by default)
+- `DEBUG`: binaries a build without debug symbols to reduce their size (`-s -w` link options) ; setting `DEBUG` to a non-zero value (0 by default) will build binary with debug symbols
