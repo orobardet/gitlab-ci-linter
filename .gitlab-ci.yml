@@ -90,10 +90,11 @@ release build windows-amd64: *_binary_release
 release build darwin-386: *_binary_release
 release build darwin-amd64: *_binary_release
 
-Update Release note:
-  stage: releasenote
-  variables:
-    VERSION: ${CI_COMMIT_TAG}
-  script: ci/update-gitlab-release.sh
-  only:
-    - tags@orobardet/gitlab-ci-linter
+#Update Release note:
+#  stage: releasenote
+#  allow_failure: true
+#  variables:
+#    VERSION: ${CI_COMMIT_TAG}
+#  script: ci/update-gitlab-release.sh
+#  only:
+#    - tags@orobardet/gitlab-ci-linter
