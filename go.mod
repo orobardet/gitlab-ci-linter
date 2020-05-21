@@ -9,6 +9,6 @@ require (
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/urfave/cli/v2 v2.1.1
-	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
+	golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd // indirect
 	gopkg.in/ini.v1 v1.52.0 // indirect
 )

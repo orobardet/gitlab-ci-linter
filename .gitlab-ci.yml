@@ -5,6 +5,8 @@ stages:
   - checks
   - tests
   - build
+  - publish
+  - latest
   - releasenote
 
 variables:
@@ -12,15 +14,47 @@ variables:
   AF_BINARY_SUBJECT: "orobardet"
   AF_BINARY_REPO: "gitlab-ci-linter"
   AF_BINARY_PACKAGE: "gitlab-ci-linter"
+  BINARY_NAME: "gitlab-ci-linter"
   CI_GITLAB_URL: "https://gitlab.com"
+  GOFLAGS: "-mod=vendor"
+  COVERAGEREPORTDIR: "coverage"
+  DOCBUILDDIR: "godoc"
+
+
+## -- Vendor stage ------------------------------------------------------------
+
+# Retrieve dependencies
+get vendors:
+  stage: vendors
+  script:
+    - go mod vendor
+  artifacts:
+    name: "${CI_JOB_NAME}_${CI_COMMIT_REF_NAME}"
+    paths:
+      - vendor/
+    expire_in: 1 hour
+
+## -- Check stage -------------------------------------------------------------
 
 gofmt:
   stage: checks
-  script: gofmt -s -l -e $(find . -name "*.go" -type f -not -path "./vendor/*")
+  script: make fmt
 
 govet:
   stage: checks
-  script: go vet
+  script: make vet
+
+checkstyle:
+  stage: checks
+  script: make checkstyle
+
+gocyclo:
+  stage: checks
+  script: make cyclo
+
+gosec:
+  stage: checks
+  script: make secucheck
 
 snyk:
   stage: checks
@@ -30,10 +64,45 @@ snyk:
   only:
     - branches@orobardet/gitlab-ci-linter
 
-go test:
-  stage: tests
-  script: go test
+## -- Test stage -------------------------------------------------------------
 
+# A test job template, to make different test jobs by branch/tags
+.go test: &_go_test_template
+  stage: tests
+  variables:
+    GOTESTFLAGS: -v
+  script:
+    - make test
+    - make html-cover
+  coverage: /^total:\s*\(statements\)\s*(\d+.\d+)\%/
+
+# Coverage on branches are only kept for 1 week
+go test:
+  <<: *_go_test_template
+  only:
+    - branches
+  artifacts:
+    paths:
+      - $COVERAGEREPORTDIR/
+    expire_in: 1 week
+
+# Coverage results on tags are kept much longer (1 year)
+go test release:
+  <<: *_go_test_template
+  only:
+    - tags
+  artifacts:
+    paths:
+      - $COVERAGEREPORTDIR/
+    expire_in: 1 year
+
+## -- Build stage -------------------------------------------------------------
+
+# Job template to build a go binary from source, for a given platform and architecture.
+# The job name contains pf and arch: job name is supposed to ends with "PF-ARCH"
+# e.g.:
+# - build dev linux-amd64
+# - release build linux-i386
 .build_binary: &_binary
   stage: build
   script:
@@ -41,10 +110,14 @@ go test:
     - export GOOS=${GOTARGET%%-*}
     - export GOARCH=${GOTARGET##*-}
     - export EXT="$([[ "$GOOS" = "windows" ]] && echo ".exe")"
-    - export BINARY=gitlab-ci-linter.${GOOS}-${GOARCH}${EXT}
+    - export BINARY=bin/${BINARY_NAME}.${GOOS}-${GOARCH}${EXT}
     - if [[ $VERSION ]] ; then export VERSION=${VERSION##v} ; fi
-    - make
+    - if [[ "$RELEASE" -eq 1 ]] ; then make release ; else make build ; fi
 
+# Job template for building **development** binary, using general build job template and adding:
+# - Enable debug
+# - Only on branches
+# - Binary kept as artifact for a week
 .build_binary_dev: &_binary_dev
   <<: *_binary
   variables:
@@ -54,9 +127,14 @@ go test:
   artifacts:
     name: "${CI_JOB_NAME}"
     paths:
-      - gitlab-ci-linter.*
+      - bin/*
     expire_in: 1 week
 
+# Job template for building **release** binary, using general build job template and adding:
+# - Versioning
+# - Release optimization
+# - Only on tags
+# - Binary kept as artifact for a year (much longer than dev build)
 .build_binary_release: &_binary_release
   <<: *_binary
   variables:
@@ -69,9 +147,10 @@ go test:
   artifacts:
     name: "${CI_JOB_NAME}"
     paths:
-      - gitlab-ci-linter.*
+      - bin/*
     expire_in: 1 year
 
+# Jobs to build dev binaries
 dev build linux-386: *_binary_dev
 dev build linux-amd64: *_binary_dev
 dev build linux-arm: *_binary_dev
@@ -81,6 +160,7 @@ dev build windows-amd64: *_binary_dev
 dev build darwin-386: *_binary_dev
 dev build darwin-amd64: *_binary_dev
 
+# Jobs release binaries
 release build linux-386: *_binary_release
 release build linux-amd64: *_binary_release
 release build linux-arm: *_binary_release
@@ -89,6 +169,53 @@ release build windows-386: *_binary_release
 release build windows-amd64: *_binary_release
 release build darwin-386: *_binary_release
 release build darwin-amd64: *_binary_release
+
+# Build godoc
+.godoc: &_godoc
+  stage: build
+  script:
+    - mkdir -p $GOPATH/src/$HOSTED_PATH
+    - cp -r * $GOPATH/src/$HOSTED_PATH
+    - make godoc
+
+dev godoc:
+  <<: *_godoc
+  only:
+    - branches
+  artifacts:
+    name: "${CI_JOB_NAME}"
+    paths:
+      - $DOCBUILDDIR
+    expire_in: 1 week
+
+godoc:
+  <<: *_godoc
+  only:
+    - tags@orobardet/gitlab-ci-linter
+  artifacts:
+    name: "${CI_JOB_NAME}"
+    paths:
+      - $DOCBUILDDIR
+    expire_in: 1 year
+
+## -- Publishing stage --------------------------------------------------------
+
+pages:
+  stage: publish
+  environment:
+    name: Gitlab Pages
+    url: https://orobardet.gitlab.io/gitlab-ci-linter/
+  script:
+    - cp -r doc/pages public
+    - cp -r $COVERAGEREPORTDIR public/coverage
+    - cp -r $DOCBUILDDIR public/godoc
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+  except:
+    - tags
 
 #Update Release note:
 #  stage: releasenote

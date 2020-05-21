@@ -232,16 +232,9 @@ As I may not have a lot of time to implement propositions, the best way to have 
 go get gitlab.com/orobardet/gitlab-ci-linter
 ```
 
-## Dependencies
+## Dependencies and module
 
-The packages it depends are managed using [go dep](https://github.com/golang/dep). You need to install `dep` on your 
-development environment.
-
-To install or update dependencies, just run the following command at the root of the repository tree:
-
-```shell
-dep ensure
-```
+This software uses go module to handle dependencies. Just ensure to use a 
 
 ## Compilation
 
@@ -251,10 +244,13 @@ A [Makefile](Makefile) is provided, to build the executable you can simply run:
 make
 ```
 
-The Makefile accept the following targets:
+The Makefile accept the following targets (but not limited to):
 
 - `build`
 - `clean` 
+- `test`: runs tests with code coverage
+- `html-cover`: generate an html report of tests coverage
+- `check`: runs some checks (fmt, vet, lint, security, cyclo, ...)
 - `rebuild`: force the rebuild from scratch (simply runs `clean` followed by `build`)
 - `install`: launch `go install`
 - `run`: run the program, after building it, if needed. Arguments for the program can be passed after the `run target` 
@@ -273,3 +269,5 @@ The Makefile also accept the following environment variables:
 - `REVISION`: the revision string to include in the program, typically the VCS commit hash (by default the git full commit hash) 
 - `BUILDTIME`: the build date and time (by default the current ones, of course)
 - `DEBUG`: binaries a build without debug symbols to reduce their size (`-s -w` link options) ; setting `DEBUG` to a non-zero value (0 by default) will build binary with debug symbols
+
+Other targets exists, look directly in the [Makefile](Makefile)'s comments. 

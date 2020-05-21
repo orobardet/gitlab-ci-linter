@@ -29,3 +29,10 @@ RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
 ENV GOUSER=go
 RUN adduser --gecos "" --disabled-password $GOUSER
 USER $GOUSER
+
+# Install some go tools
+RUN go get -u golang.org/x/tools/cmd/godoc && \
+    go get -u golang.org/x/lint/golint && \
+    go get -u github.com/alecthomas/gocyclo && \
+    go get -u github.com/securego/gosec/cmd/gosec/... && \
+    go clean && rm -fr /tmp/*

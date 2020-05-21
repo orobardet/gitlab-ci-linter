@@ -1,0 +1,50 @@
+html,body {
+    padding: 0;
+    margin: 0;
+}
+
+.navbar {
+    background-color: #333;
+}
+
+.navbar a {
+    padding: 10px 15px;
+    color: #AAA;
+    display: inline-block;
+    font-size: 15px;
+    text-decoration: none;
+}
+
+.navbar a:hover {
+    background-color: white;
+    color: #333;
+}
+
+.main-content {
+    font-family: sans-serif;
+    margin: auto;
+    max-width: 1280px;
+    padding: 10px;
+}
+
+.main-content a {
+    color: #5279C7;
+    text-decoration: none;
+}
+.main-content a:hover {
+    color: #5158a5;
+    text-decoration: underline dotted;
+}
+
+.footer {
+    padding: 10px 15px;
+    margin-top: 20px;
+    text-align: center;
+    color: #AAA;
+    font-size: 12px;
+}
+
+.footer a {
+    color: #AAA;
+    text-decoration: none;
+}
