@@ -24,33 +24,33 @@ import (
 	"testing"
 )
 
-var httpiseRemoteUrl_Data = [][]string{
-	[]string{"http://gitlab.com", "http://gitlab.com"},
-	[]string{"https://gitlab.com", "https://gitlab.com"},
-	[]string{"http://gitlab.com/my/project", "http://gitlab.com"},
-	[]string{"https://gitlab.com/my/project", "https://gitlab.com"},
-	[]string{"http://my.company-forge.com/", "http://my.company-forge.com"},
-	[]string{"https://my.company-forge.com", "https://my.company-forge.com"},
-	[]string{"http://my.company-forge.com/my/project", "http://my.company-forge.com"},
-	[]string{"https://my.company-forge.com/my/project", "https://my.company-forge.com"},
-	[]string{"git@gitlab.com", "http://gitlab.com"},
-	[]string{"git@gitlab.com:my/project", "http://gitlab.com"},
-	[]string{"git@my.company-forge.com", "http://my.company-forge.com"},
-	[]string{"git@my.company-forge.com:my/project", "http://my.company-forge.com"},
-	[]string{"gitlab.com", "http://gitlab.com"},
-	[]string{"gitlab.com:my/project", "http://gitlab.com"},
-	[]string{"my.company-forge.com", "http://my.company-forge.com"},
-	[]string{"my.company-forge.com:my/project", "http://my.company-forge.com"},
-	[]string{"", ""},
+var httpiseRemoteURLData = [][]string{
+	{"http://gitlab.com", "http://gitlab.com"},
+	{"https://gitlab.com", "https://gitlab.com"},
+	{"http://gitlab.com/my/project", "http://gitlab.com"},
+	{"https://gitlab.com/my/project", "https://gitlab.com"},
+	{"http://my.company-forge.com/", "http://my.company-forge.com"},
+	{"https://my.company-forge.com", "https://my.company-forge.com"},
+	{"http://my.company-forge.com/my/project", "http://my.company-forge.com"},
+	{"https://my.company-forge.com/my/project", "https://my.company-forge.com"},
+	{"git@gitlab.com", "http://gitlab.com"},
+	{"git@gitlab.com:my/project", "http://gitlab.com"},
+	{"git@my.company-forge.com", "http://my.company-forge.com"},
+	{"git@my.company-forge.com:my/project", "http://my.company-forge.com"},
+	{"gitlab.com", "http://gitlab.com"},
+	{"gitlab.com:my/project", "http://gitlab.com"},
+	{"my.company-forge.com", "http://my.company-forge.com"},
+	{"my.company-forge.com:my/project", "http://my.company-forge.com"},
+	{"", ""},
 }
 
 func TestHttpiseRemoteUrl(t *testing.T) {
 
-	for _, testData := range httpiseRemoteUrl_Data {
+	for _, testData := range httpiseRemoteURLData {
 		params := testData[0]
 		expectedResult := testData[1]
 		t.Run("url="+params, func(t *testing.T) {
-			result := httpiseRemoteUrl(params)
+			result := httpiseRemoteURL(params)
 			if result != expectedResult {
 				t.Errorf("received '%s' while expecting '%s'", result, expectedResult)
 			}

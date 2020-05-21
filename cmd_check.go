@@ -35,7 +35,7 @@ import (
 // First it search for a gitlab-ci file if no one is given
 // Then it search for a .git repository directory
 // If a .git repository is found, its origin remote is analysed to extract and guess a the Gitlab root url to use for
-// the API. If no valid origin remote or API is found, the defaultGitlabRootUrl is used
+// the API. If no valid origin remote or API is found, the defaultGitlabRootURL is used
 // Finally, it call the API with the gitlab-ci file content. If the content if syntax valid, it silently stop. Else it
 // display the error messages returned by the API and exit with an error
 func commandCheck(c *cli.Context) error {
@@ -71,25 +71,25 @@ func commandCheck(c *cli.Context) error {
 	if gitRepoPath == "" {
 		// Warn user that we're defaulting because no git repo was found
 		yellow := color.New(color.FgYellow).SprintFunc()
-		fmt.Fprintf(color.Output, yellow("No GIT repository found, using default Gitlab API '%s'\n"), gitlabRootUrl)
+		fmt.Fprintf(color.Output, yellow("No GIT repository found, using default Gitlab API '%s'\n"), gitlabRootURL)
 	} else {
 		// Extract origin remote url from repository config
-		remoteUrl, err := getGitOriginRemoteUrl(gitRepoPath)
+		remoteURL, err := getGitOriginRemoteURL(gitRepoPath)
 		if err != nil {
 			return cli.NewExitError(fmt.Sprintf("Failed to find origin remote url in repository: %s", err), 5)
 		}
 
 		// Check if we can use the origin remote url
-		if remoteUrl != "" {
+		if remoteURL != "" {
 			// Guess gitlab url based on remote url
-			gitlabRootUrl, err = guessGitlabAPIFromGitRemoteUrl(remoteUrl)
+			gitlabRootURL, err = guessGitlabAPIFromGitRemoteURL(remoteURL)
 			if err != nil {
 				return cli.NewExitError(fmt.Sprintf("No valid and responding Gitlab API URL found from repository's origin remote: %s", err), 5)
 			}
 		} else {
 			// Warn user that we're defaulting because no origin remote was found
 			yellow := color.New(color.FgYellow).SprintFunc()
-			fmt.Fprintf(color.Output, yellow("No origin remote found in repository, using default Gitlab API '%s'\n"), gitlabRootUrl)
+			fmt.Fprintf(color.Output, yellow("No origin remote found in repository, using default Gitlab API '%s'\n"), gitlabRootURL)
 		}
 	}
 
@@ -105,9 +105,9 @@ func commandCheck(c *cli.Context) error {
 		return cli.NewExitError(fmt.Sprintf("Error while reading '%s' file content: %s", relativeGitlabCiFilePath, err), 5)
 	}
 
-	status, errorMessages, err := lintGitlabCIUsingAPI(gitlabRootUrl, string(ciFileContent))
+	status, errorMessages, err := lintGitlabCIUsingAPI(gitlabRootURL, string(ciFileContent))
 	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("Error querying Gitlab API '%s' for CI lint: %s", gitlabRootUrl, err), 5)
+		return cli.NewExitError(fmt.Sprintf("Error querying Gitlab API '%s' for CI lint: %s", gitlabRootURL, err), 5)
 	}
 
 	if !status {
@@ -119,7 +119,7 @@ func commandCheck(c *cli.Context) error {
 		fmt.Fprintf(color.Output, "%s\n", red("KO"))
 
 		messages := red(strings.Join(errorMessages, "\n"))
-		os.Stderr.WriteString(fmt.Sprintf("%s\n", messages))
+		fmt.Fprintf(os.Stderr, "%s\n", messages)
 
 		return cli.NewExitError("", 10)
 	}

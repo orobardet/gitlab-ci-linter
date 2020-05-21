@@ -29,20 +29,20 @@ import (
 	"path/filepath"
 )
 
-// Application name
+// APPNAME contains the application name
 var APPNAME = "gitlab-ci-linter"
 
-// Version of the program
+// VERSION contains the version of the program
 var VERSION = "0.0.0-dev"
 
-// Revision of the program
+// REVISION contains the revision of the program
 var REVISION = "HEAD"
 
-// Build date and time of the program
+// BUILDTIME contains the build date and time of the program
 var BUILDTIME = ""
 
 // The Gitlab instance root URL to use.
-var gitlabRootUrl string
+var gitlabRootURL string
 
 // The full path of the gitlab-ci file to check, if given at calls.
 // If no path is given at call, the variable will be an empty string, and the program will search for the file
@@ -129,10 +129,10 @@ Usage:
 		&cli.StringFlag{
 			Name:        "gitlab-url",
 			Aliases:     []string{"u"},
-			Value:       defaultGitlabRootUrl,
+			Value:       defaultGitlabRootURL,
 			Usage:       "root `URL` of the Gitlab instance to use API",
 			EnvVars:     []string{"GCL_GITLAB_URL"},
-			Destination: &gitlabRootUrl,
+			Destination: &gitlabRootURL,
 		},
 		&cli.StringFlag{
 			Name:        "ci-file",
@@ -257,5 +257,8 @@ Usage:
 		return commandCheck(c)
 	}
 
-	app.Run(os.Args)
+	err := app.Run(os.Args)
+	if err != nil {
+		panic(err)
+	}
 }

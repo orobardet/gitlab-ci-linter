@@ -37,15 +37,17 @@ import (
 const gitlabCiFileName = ".gitlab-ci.yml"
 
 // Default Gitlab instance URL to use
-const defaultGitlabRootUrl = "https://gitlab.com"
+const defaultGitlabRootURL = "https://gitlab.com"
 
 // Path of the Gitlab CI lint API, to be used on the root url
-const gitlabApiCiLintPath = "/api/v4/ci/lint"
+const gitlabAPICiLintPath = "/api/v4/ci/lint"
 
+// GitlabAPILintRequest struct represents the JSON body of a request sent to the Gitlab API /ci/lint
 type GitlabAPILintRequest struct {
 	Content string `json:"content"`
 }
 
+// GitlabAPILintResponse struct represents the JSON body of a response from the Gitlab API /ci/lint
 type GitlabAPILintResponse struct {
 	Status string   `json:"status,omitempty"`
 	Error  string   `json:"error,omitempty"`
@@ -65,12 +67,12 @@ func findGitlabCiFile(directory string) (string, error) {
 	// If we are at the root of the filesystem, it means we did not find any gitlab-ci file
 	if directory[len(directory)-1] == filepath.Separator {
 		return "", errors.New("not found")
-	} else { // else check the parent directory
-		return findGitlabCiFile(filepath.Dir(directory))
 	}
+
+	return findGitlabCiFile(filepath.Dir(directory))
 }
 
-func initGitlabHttpClientRequest(method string, url string, content string) (*http.Client, *http.Request, error) {
+func initGitlabHTTPClientRequest(method string, url string, content string) (*http.Client, *http.Request, error) {
 	var httpClient *http.Client
 	var req *http.Request
 
@@ -93,48 +95,48 @@ func initGitlabHttpClientRequest(method string, url string, content string) (*ht
 // If a redirection is detected, return the redirected root URL.
 // This is needed as redirection response only occurs when the API is call using en HTTP GET, but in the en the API
 // has to be called in POST
-func checkGitlabAPIUrl(rootUrl string) (string, error) {
+func checkGitlabAPIUrl(rootURL string) (string, error) {
 
-	newRootUrl := rootUrl
+	newRootURL := rootURL
 
-	lintURL := rootUrl + gitlabApiCiLintPath
+	lintURL := rootURL + gitlabAPICiLintPath
 
 	if verboseMode {
-		fmt.Printf("Checking '%s' (using '%s')...\n", rootUrl, lintURL)
+		fmt.Printf("Checking '%s' (using '%s')...\n", rootURL, lintURL)
 	}
 
-	httpClient, req, err := initGitlabHttpClientRequest("GET", lintURL, "")
+	httpClient, req, err := initGitlabHTTPClientRequest("GET", lintURL, "")
 	if err != nil {
-		return newRootUrl, err
+		return newRootURL, err
 	}
 
 	resp, err := httpClient.Do(req)
 
 	if err != nil {
-		return newRootUrl, err
+		return newRootURL, err
 	}
 	defer resp.Body.Close()
 
 	// Getting the full URL used for the last query, after following potential redirection
-	lastUrl := resp.Request.URL.String()
+	lastURL := resp.Request.URL.String()
 
 	// Let's try to get the redirected root URL by removing the gitlab API path from the last use URL
-	lastRootUrl := strings.TrimSuffix(lastUrl, gitlabApiCiLintPath)
+	lastRootURL := strings.TrimSuffix(lastURL, gitlabAPICiLintPath)
 	// If the result is not empty or unchanged, it means
-	if lastRootUrl != "" && lastRootUrl != lastUrl {
-		newRootUrl = lastRootUrl
+	if lastRootURL != "" && lastRootURL != lastURL {
+		newRootURL = lastRootURL
 	}
 
 	if verboseMode {
-		fmt.Printf("Url '%s' validated\n", newRootUrl)
+		fmt.Printf("Url '%s' validated\n", newRootURL)
 	}
 
-	return newRootUrl, nil
+	return newRootURL, nil
 }
 
 // Send the content of a gitlab-ci file to a Gitlab instance lint API to check its validity
 // In case of invalid, lint error messages are returned in `msgs`
-func lintGitlabCIUsingAPI(rootUrl string, ciFileContent string) (status bool, msgs []string, err error) {
+func lintGitlabCIUsingAPI(rootURL string, ciFileContent string) (status bool, msgs []string, err error) {
 
 	msgs = []string{}
 	status = false
@@ -147,11 +149,11 @@ func lintGitlabCIUsingAPI(rootUrl string, ciFileContent string) (status bool, ms
 	reqBody, _ := json.Marshal(reqParams)
 
 	// Prepare requesting the API
-	lintURL := rootUrl + gitlabApiCiLintPath
+	lintURL := rootURL + gitlabAPICiLintPath
 	if verboseMode {
 		fmt.Printf("Querying %s...\n", lintURL)
 	}
-	httpClient, req, err := initGitlabHttpClientRequest("POST", lintURL, string(reqBody))
+	httpClient, req, err := initGitlabHTTPClientRequest("POST", lintURL, string(reqBody))
 
 	// Make the request to the API
 	resp, err := httpClient.Do(req)
@@ -188,15 +190,15 @@ func lintGitlabCIUsingAPI(rootUrl string, ciFileContent string) (status bool, ms
 	return
 }
 
-func guessGitlabAPIFromGitRemoteUrl(remoteUrl string) (apiRootUrl string, err error) {
-	httpRemoteUrl, err := checkGitlabAPIUrl(httpiseRemoteUrl(remoteUrl))
+func guessGitlabAPIFromGitRemoteURL(remoteURL string) (apiRootURL string, err error) {
+	httpRemoteURL, err := checkGitlabAPIUrl(httpiseRemoteURL(remoteURL))
 	if err != nil {
 		return "", err
 	}
-	if httpRemoteUrl != "" {
-		apiRootUrl = httpRemoteUrl
+	if httpRemoteURL != "" {
+		apiRootURL = httpRemoteURL
 		if verboseMode {
-			fmt.Printf("API url found: %s\n", httpRemoteUrl)
+			fmt.Printf("API url found: %s\n", httpRemoteURL)
 		}
 	} else {
 		return "", errors.New("Unknown error occurs")

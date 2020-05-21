@@ -49,22 +49,22 @@ func commandInstall(c *cli.Context) error {
 	}
 
 	// Extract origin remote url from repository config
-	remoteUrl, err := getGitOriginRemoteUrl(gitRepoPath)
+	remoteURL, err := getGitOriginRemoteURL(gitRepoPath)
 	if err != nil {
 		return cli.NewExitError(fmt.Sprintf("Failed to find origin remote url in repository: %s", err), 5)
 	}
 
 	// Check if we can use the origin remote url
-	if remoteUrl != "" {
+	if remoteURL != "" {
 		// Guess gitlab url based on remote url
-		_, err = guessGitlabAPIFromGitRemoteUrl(remoteUrl)
+		_, err = guessGitlabAPIFromGitRemoteURL(remoteURL)
 		if err != nil {
 			return cli.NewExitError(fmt.Sprintf("No valid and responding Gitlab API URL found from repository's origin remote, can't install a hook"), 5)
 		}
 	} else if verboseMode {
 		// Warn user that we're defaulting because no origin remote was found
 		yellow := color.New(color.FgYellow).SprintFunc()
-		fmt.Fprintf(color.Output, yellow("No origin remote found in repository, will be using default Gitlab API '%s'\n"), gitlabRootUrl)
+		fmt.Fprintf(color.Output, yellow("No origin remote found in repository, will be using default Gitlab API '%s'\n"), gitlabRootURL)
 	}
 
 	status, err := createGitHookLink(gitRepoPath, "pre-commit")

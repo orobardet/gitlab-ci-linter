@@ -27,6 +27,7 @@ import (
 	"path/filepath"
 )
 
+// Enum describing the hook creation state
 const (
 	HookError = iota
 	HookCreated
@@ -43,7 +44,7 @@ func createGitHookLink(gitRepoPath string, hookName string) (int, error) {
 		return HookError, err
 	}
 
-	err = os.MkdirAll(path.Join(gitRepoPath, "hooks"), 0755)
+	err = os.MkdirAll(path.Join(gitRepoPath, "hooks"), 0755) // #nosec G301
 	if err != nil {
 		return HookError, err
 	}
@@ -61,23 +62,23 @@ func createGitHookLink(gitRepoPath string, hookName string) (int, error) {
 		// If there is a hook, maybe it's already ourself?
 		if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
 			return HookAlreadyExists, nil
-		} else {
-			linkDest, err := os.Readlink(hookPath)
-			if err != nil {
-				return HookError, err
-			}
-
-			linkDest, err = filepath.Abs(linkDest)
-			if err != nil {
-				return HookError, err
-			}
-
-			if linkDest == currentExe {
-				return HookAlreadyCreated, nil
-			} else {
-				return HookAlreadyExists, nil
-			}
 		}
+
+		linkDest, err := os.Readlink(hookPath)
+		if err != nil {
+			return HookError, err
+		}
+
+		linkDest, err = filepath.Abs(linkDest)
+		if err != nil {
+			return HookError, err
+		}
+
+		if linkDest == currentExe {
+			return HookAlreadyCreated, nil
+		}
+
+		return HookAlreadyExists, nil
 	}
 
 	return HookCreated, nil
@@ -89,38 +90,37 @@ func deleteGitHookLink(gitRepoPath string, hookName string) (int, error) {
 	fi, err := os.Lstat(hookPath)
 	if os.IsNotExist(err) {
 		return HookNotExisting, nil
-	} else {
-		currentExe, err := os.Executable()
+	}
+
+	currentExe, err := os.Executable()
+	if err != nil {
+		return HookError, err
+	}
+	if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
+		return HookNotMatching, nil
+	}
+
+	linkDest, err := os.Readlink(hookPath)
+	if err != nil {
+		return HookError, err
+	}
+
+	linkDest, err = filepath.Abs(linkDest)
+	if err != nil {
+		return HookError, err
+	}
+
+	if verboseMode {
+		fmt.Println(linkDest)
+	}
+
+	if linkDest == currentExe {
+		err = os.Remove(hookPath)
 		if err != nil {
 			return HookError, err
 		}
-		if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
-			return HookNotMatching, nil
-		} else {
-			linkDest, err := os.Readlink(hookPath)
-			if err != nil {
-				return HookError, err
-			}
-
-			linkDest, err = filepath.Abs(linkDest)
-			if err != nil {
-				return HookError, err
-			}
-
-			if verboseMode {
-				fmt.Println(linkDest)
-			}
-
-			if linkDest == currentExe {
-				err = os.Remove(hookPath)
-				if err != nil {
-					return HookError, err
-				}
-			} else {
-				return HookNotMatching, nil
-			}
-		}
-
+	} else {
+		return HookNotMatching, nil
 	}
 
 	return HookDeleted, nil

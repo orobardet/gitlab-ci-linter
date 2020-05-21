@@ -55,9 +55,9 @@ func findGitRepo(directory string) (string, error) {
 	// If we are at the root of the filesystem, it means we did not find any gitlab-ci file
 	if directory[len(directory)-1] == filepath.Separator {
 		return "", errors.New("not found")
-	} else { // else check the parent directory
-		return findGitRepo(filepath.Dir(directory))
 	}
+
+	return findGitRepo(filepath.Dir(directory))
 }
 
 // Load git config file from git repository directory
@@ -71,7 +71,7 @@ func loadGitCfg(gitDirectory string) (*ini.File, error) {
 }
 
 // Extract the origin remote remote url from a git config file
-func getGitOriginRemoteUrl(gitDirectory string) (string, error) {
+func getGitOriginRemoteURL(gitDirectory string) (string, error) {
 	cfg, err := loadGitCfg(gitDirectory)
 	if err != nil {
 		return "", err
@@ -86,16 +86,16 @@ func getGitOriginRemoteUrl(gitDirectory string) (string, error) {
 }
 
 // Transform a git remote url, that can be a full http ou ssh url, to a simple http FQDN host
-func httpiseRemoteUrl(remoteUrl string) string {
+func httpiseRemoteURL(remoteURL string) string {
 	re := regexp.MustCompile("^(https?://[^/]*).*$")
-	if re.MatchString(remoteUrl) { // http remote
-		matches := re.FindStringSubmatch(remoteUrl)
+	if re.MatchString(remoteURL) { // http remote
+		matches := re.FindStringSubmatch(remoteURL)
 		if len(matches) >= 2 {
 			return matches[1]
 		}
 	} else { // ssh remote
 		re = regexp.MustCompile("^([^@]*@)?([^:]+)")
-		matches := re.FindStringSubmatch(remoteUrl)
+		matches := re.FindStringSubmatch(remoteURL)
 		if len(matches) >= 3 {
 			return "http://" + matches[2]
 		}
