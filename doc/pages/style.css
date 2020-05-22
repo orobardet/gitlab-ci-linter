@@ -48,3 +48,21 @@ html,body {
     color: #AAA;
     text-decoration: none;
 }
+
+.code {
+    font-family: monospace;
+    color: #1F1F1F;
+    background-color: #F2F2F2;
+    word-break: keep-all;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+span.code {
+    font-weight: inherit;
+    display: inline-block;
+}
+div.code {
+    font-weight: inherit;
+    padding: 5px;
+    margin: 5px 0px;
+}

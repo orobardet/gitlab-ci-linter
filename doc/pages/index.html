@@ -16,7 +16,16 @@
     <h1>gitlab-ci-linter</h1>
 
     <p>
-        Personal budget management software.
+        <div class="code">
+        Goodbye "yaml invalid" pipeline errors, and don't come back!
+        </div>
+    </p>
+    <p>
+        This tool use the <a hreg="https://docs.gitlab.com/ce/api/ci/lint.html">Gitlab API</a> to validate your local <span class="code">.gitlab-ci.yml</span>.<br/>
+        It can be installed as a git pre-commit hook, preventing commit (and so push) of an invalid <span class="code">.gitlab-ci.yml</span>.<br/>
+        <br/>
+        <b>The tool itself does not lint anything: it uses the lint API of a Gitlab instance => it needs to be run somewhere with an access to the Gitlab instance where your project come from.</b>
+    <br/>
     <ul>
         <li><a href="coverage/all.html">💉 Code coverage</a></li>
         <li><a href="godoc/index.html">📖 Godoc</a></li>
