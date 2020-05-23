@@ -25,6 +25,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/urfave/cli/v2"
 	"math"
+	"net/url"
 	"os"
 	"path/filepath"
 )
@@ -129,8 +130,8 @@ Usage:
 		&cli.StringFlag{
 			Name:        "gitlab-url",
 			Aliases:     []string{"u"},
-			Value:       defaultGitlabRootURL,
-			Usage:       "root `URL` of the Gitlab instance to use API",
+			Value:       "",
+			Usage:       fmt.Sprintf("root `URL` of the Gitlab instance to use API (default: auto-detect from remote origin, else \"%s\")", defaultGitlabRootURL),
 			EnvVars:     []string{"GCL_GITLAB_URL"},
 			Destination: &gitlabRootURL,
 		},
@@ -248,6 +249,17 @@ Usage:
 			if fileInfo.IsDir() {
 				return cli.NewExitError(fmt.Sprintf("'%s' is a directory, not a file", gitlabCiFilePath), 1)
 			}
+		}
+
+		if gitlabRootURL != "" {
+			u, err := url.Parse(gitlabRootURL)
+			if err != nil {
+				cli.NewExitError(fmt.Sprintf("Unable to parse gitlab root URL '%s': %s", gitlabRootURL, err), 1)
+			}
+			if u.Scheme == "" {
+				u.Scheme = "http"
+			}
+			gitlabRootURL = u.String()
 		}
 
 		return nil

@@ -2,6 +2,7 @@
 
 - Add a `--personal-access-token` option specify a personal access token (e.g. when 2FA is enabled). Thanks @fhitche1 (!13)
 - Fixes short command line options that where not working since upgrade to urfave/cli v2 (#12)
+- Option `--gitlab-url` now has precedence over detecting URL from the origin remote(#13)
 - Code refactoring, CI and build tooling improvement (!15)
 
 # v2.1.0

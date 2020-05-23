@@ -134,15 +134,15 @@ Usage:
    gitlab-ci-linter [global options] [command [command options]] [PATH]
 
 Global options:
-   --gitlab-url URL, -u URL   root URL of the Gitlab instance to use API (default: "https://gitlab.com") [$GCL_GITLAB_URL]
-   --ci-file FILE, -f FILE    FILE is the relative or absolute path to the gitlab-ci file [$GCL_GITLAB_CI_FILE]
-   --directory DIR, -d DIR    DIR is the directory from where to search for gitlab-ci file and git repository (default: ".") [$GCL_DIRECTORY]
-   --personal-access-token TOK -p TOK  personal access token TOK for accessing repositories when you have 2FA enabled [$GCL_PERSONAL_ACCESS_TOKEN]
-   --timeout value, -t value  timeout in second after which http request to Gitlab API will timeout (and the program will fails) (default: 5) [$GCL_TIMEOUT]
-   --no-color, -n             don't color output. By defaults the output is colorized if a compatible terminal is detected. [$GCL_NOCOLOR]
-   --verbose, -v              verbose mode [$GCL_VERBOSE]
-   --help, -h                 show help
-   --version, -V              print the version information
+   --gitlab-url URL, -u URL             root URL of the Gitlab instance to use API (default: auto-detect from remote origin, else "https://gitlab.com") [$GCL_GITLAB_URL]
+   --ci-file FILE, -f FILE              FILE is the relative or absolute path to the gitlab-ci file [$GCL_GITLAB_CI_FILE]
+   --directory DIR, -d DIR              DIR is the directory from where to search for gitlab-ci file and git repository (default: ".") [$GCL_DIRECTORY]
+   --personal-access-token TOK, -p TOK  personal access token TOK for accessing repositories when you have 2FA enabled [$GCL_PERSONAL_ACCESS_TOKEN]
+   --timeout value, -t value            timeout in second after which http request to Gitlab API will timeout (and the program will fails) (default: 5) [$GCL_TIMEOUT]
+   --no-color, -n                       don't color output. By defaults the output is colorized if a compatible terminal is detected. (default: false) [$GCL_NOCOLOR]
+   --verbose, -v                        verbose mode (default: false) [$GCL_VERBOSE]
+   --help, -h                           show help (default: false)
+   --version                            print the version information (default: false)
    
 Arguments:
    If PATH if given, it will depending of its type on filesystem:
@@ -202,7 +202,8 @@ Install a pre-commit hook in another git repository:
 gitlab-ci-lint -d /path/to/another/git install
 ```
 
-You don't want https://gitlab.com to be the default Gitlab URL to use?
+You don't want https://gitlab.com to be the default Gitlab URL to use? There is no origin remote configured in your repository?
+Or you don't want to use this gitlab?
 
 ```shell
 gitlab-ci-lint --gitlab-url https://gitlab.my.org check
