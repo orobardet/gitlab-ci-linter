@@ -25,6 +25,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 	"path"
@@ -77,6 +78,18 @@ func initGitlabHTTPClientRequest(method string, url string, content string) (*ht
 	var req *http.Request
 
 	httpClient = &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			ForceAttemptHTTP2:     false,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		},
 		Timeout: time.Second * time.Duration(httpRequestTimeout),
 	}
 
@@ -107,13 +120,14 @@ func checkGitlabAPIUrl(rootURL string) (string, error) {
 
 	httpClient, req, err := initGitlabHTTPClientRequest("GET", lintURL, "")
 	if err != nil {
-		return newRootURL, err
+		return newRootURL, fmt.Errorf("Unable to create an HTTP client: %w", err)
 	}
 
 	resp, err := httpClient.Do(req)
 
 	if err != nil {
-		return newRootURL, err
+		fmt.Printf("%+v\n", req.Header)
+		return newRootURL, fmt.Errorf("HTTP request error: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -154,10 +168,15 @@ func lintGitlabCIUsingAPI(rootURL string, ciFileContent string) (status bool, ms
 		fmt.Printf("Querying %s...\n", lintURL)
 	}
 	httpClient, req, err := initGitlabHTTPClientRequest("POST", lintURL, string(reqBody))
+	if err != nil {
+		err = fmt.Errorf("Unable to create an HTTP client: %w", err)
+		return
+	}
 
 	// Make the request to the API
 	resp, err := httpClient.Do(req)
 	if err != nil {
+		err = fmt.Errorf("HTTP request error: %w", err)
 		return
 	}
 	defer resp.Body.Close()
@@ -165,17 +184,20 @@ func lintGitlabCIUsingAPI(rootURL string, ciFileContent string) (status bool, ms
 	// Get the results
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		err = fmt.Errorf("Unable to parse response: %w", err)
 		return
 	}
 	var result GitlabAPILintResponse
 	err = json.Unmarshal([]byte(body), &result)
 	if err != nil {
+		err = fmt.Errorf("Unable to parse JSON response: %w", err)
 		return
 	}
 
 	// Analyse the results
 	if result.Status == "valid" {
 		status = true
+		err = nil
 		return
 	}
 
@@ -184,7 +206,7 @@ func lintGitlabCIUsingAPI(rootURL string, ciFileContent string) (status bool, ms
 	}
 
 	if result.Error != "" {
-		err = errors.New(result.Error)
+		err = fmt.Errorf("API respond  %s", result.Error)
 	}
 
 	return

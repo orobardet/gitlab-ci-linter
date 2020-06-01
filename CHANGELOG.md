@@ -5,6 +5,11 @@
 - Option `--gitlab-url` now has precedence over detecting URL from the origin remote(#13)
 - Code refactoring, CI and build tooling improvement (!15)
 - Validate value of `--gitlab-url` (#14)
+- Better error when unable to contact the gitlab API (#9)
+
+**Breaking changes:**
+
+- When no scheme (http or https) is explicitly given or guessable for a Gitlab URL, https:// is now used by default.
 
 # v2.1.0
 

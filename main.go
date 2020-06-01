@@ -59,7 +59,7 @@ var personalAccessToken string
 
 // Timeout in seconds for HTTP request to the Gitlab API
 // Request will fail if lasting more than the timeout
-var httpRequestTimeout uint = 5
+var httpRequestTimeout uint = 15
 
 // Tells if output should be colorized or not
 var colorMode = true

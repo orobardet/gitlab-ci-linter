@@ -97,7 +97,7 @@ func httpiseRemoteURL(remoteURL string) string {
 		re = regexp.MustCompile("^([^@]*@)?([^:]+)")
 		matches := re.FindStringSubmatch(remoteURL)
 		if len(matches) >= 3 {
-			return "http://" + matches[2]
+			return "https://" + matches[2]
 		}
 	}
 

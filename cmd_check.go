@@ -125,7 +125,7 @@ func commandCheck(c *cli.Context) error {
 
 	status, errorMessages, err := lintGitlabCIUsingAPI(localGitlabRootURL, string(ciFileContent))
 	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("Error querying Gitlab API '%s' for CI lint: %s", gitlabRootURL, err), 5)
+		return cli.NewExitError(fmt.Errorf("Error linting using Gitlab API %s: %w", localGitlabRootURL, err), 5)
 	}
 
 	if !status {
