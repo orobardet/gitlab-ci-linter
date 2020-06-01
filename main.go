@@ -257,7 +257,7 @@ Usage:
 				cli.NewExitError(fmt.Sprintf("Unable to parse gitlab root URL '%s': %s", gitlabRootURL, err), 1)
 			}
 			if u.Scheme == "" {
-				u.Scheme = "http"
+				u.Scheme = "https"
 			}
 			gitlabRootURL = u.String()
 		}
