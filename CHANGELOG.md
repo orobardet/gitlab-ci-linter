@@ -1,4 +1,4 @@
-# Next
+# v2.2.0
 
 - Add a `--personal-access-token` option specify a personal access token (e.g. when 2FA is enabled). Thanks @fhitche1 (!13)
 - Fixes short command line options that where not working since upgrade to urfave/cli v2 (#12)
