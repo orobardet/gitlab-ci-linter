@@ -113,6 +113,7 @@ go test release:
     - export BINARY=bin/${BINARY_NAME}.${GOOS}-${GOARCH}${EXT}
     - if [[ $VERSION ]] ; then export VERSION=${VERSION##v} ; fi
     - if [[ "$RELEASE" -eq 1 ]] ; then make release ; else make build ; fi
+    - if [[ "$UPLOAD" -eq 1 ]] ; then curl -T $BINARY -u${AF_API_USER}:${AF_API_KEY} "$AF_BINARY_URL/content/$AF_BINARY_SUBJECT/$AF_BINARY_REPO/$AF_BINARY_PACKAGE/${VERSION}/$(basename $BINARY)?override=1&publish=1" ; fi
 
 # Job template for building **development** binary, using general build job template and adding:
 # - Enable debug
@@ -140,10 +141,9 @@ go test release:
   variables:
     VERSION: ${CI_COMMIT_TAG}
     RELEASE: "1"
+    UPLOAD: "1"
   only:
     - tags@orobardet/gitlab-ci-linter
-  after_script:
-    - curl -T $BINARY -u${AFI_API_USER}:${AF_API_KEY} "$AF_BINARY_URL/content/$AF_BINARY_SUBJECT/$AF_BINARY_REPO/$AF_BINARY_PACKAGE/${VERSION}/$(basename $BINARY)?override=1&publish=1"
   artifacts:
     name: "${CI_JOB_NAME}"
     paths:
