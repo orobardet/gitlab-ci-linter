@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"gitlab.com/orobardet/gitlab-ci-linter/config"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -96,7 +97,7 @@ func initGitlabHTTPClientRequest(method string, url string, content string) (*ht
 	req, err := http.NewRequest(method, url, strings.NewReader(content))
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("User-Agent", fmt.Sprintf("%s/%s", APPNAME, VERSION))
+	req.Header.Add("User-Agent", fmt.Sprintf("%s/%s", config.APPNAME, config.VERSION))
 	if personalAccessToken != "" {
 		req.Header.Add("PRIVATE-TOKEN", personalAccessToken)
 	}

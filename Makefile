@@ -1,5 +1,8 @@
+# Olivier Robardet's Go Makefile v1.0.0
+#
 # Targets:
 #
+# - setup: install dev dependencies (needs a valid and workin Go environment)
 # - imports: list all direct imports for all the packages of the application
 # - deps: list all dependencies (imports recursively) for all the packages of the application
 # - all: default, just match 'build' target
@@ -48,20 +51,21 @@ BINARY?=$(if $(filter $(OS),Windows_NT),$(BUILDDIR)/$(PROGRAM_NAME).exe,$(BUILDD
 DEBUG:=0
 
 # Version number to use when building the program
-VERSION?=$(shell git describe --tags --always --match=v* 2> /dev/null || cat ${SOURCEDIR}/VERSION 2> /dev/null || echo v0.0.0)+dev
+VERSION?=$(shell git describe --tags --match=v* 2> /dev/null || cat ${SOURCEDIR}/VERSION 2> /dev/null || echo v0.0.0)+dev
 # Revision or VCS hash to use when building the program. Can be long, it may be truncated by the program at
 REVISION?=$(shell git rev-parse HEAD || echo "")
 # Build date&time to use when building the programme. Unlikely needed to be overriden.
 BUILDTIME?=$(shell date +%FT%T%z)
 
 MAIN_PACKAGE_PATH=$(shell go list . 2> /dev/null)/
-LDFLAGS+=-X $(MAIN_PACKAGE_PATH)main.VERSION=${VERSION} -X $(MAIN_PACKAGE_PATH)main.REVISION=${REVISION} -X $(MAIN_PACKAGE_PATH)main.BUILDTIME=${BUILDTIME}
+LDFLAGS+=-X $(MAIN_PACKAGE_PATH)config.VERSION=${VERSION} -X $(MAIN_PACKAGE_PATH)config.REVISION=${REVISION} -X $(MAIN_PACKAGE_PATH)config.BUILDTIME=${BUILDTIME}
 ifeq ($(DEBUG),0)
   LDFLAGS+=-s -w
-else
-  LDFLAGS+=-X $(MAIN_PACKAGE_PATH)main.RELEASE=false
 endif
-CYCLOTHRESHOLD?=20
+SOURCES:=$(shell find $(SOURCEDIR) -name '*.go' -not -path "$(SOURCEDIR)/vendor/*" 2>/dev/null)
+PACKAGES:=$(shell go list ./...)
+PACKAGEPATHS:=$(shell go list -f "{{.Dir}}" ./...)
+CYCLOTHRESHOLD?=15
 
 GOTESTCMD?=go test
 GOTESTFLAGS?=
@@ -75,6 +79,7 @@ PACKAGEPATHS:=$(shell go list -f "{{.Dir}}" ./...)
 
 .DEFAULT_GOAL: all
 
+.PHONY: all
 all: build
 
 .PHONY: has-depends _godoc_binary _golint_binary _gocyclo_binary _gosec_binary _upx_binary
@@ -106,6 +111,11 @@ release: _upx_binary build
 
 rebuild: clean build
 
+.PHONY: setup
+setup:
+	cd $(GOPATH)
+	go get -u golang.org/x/sys golang.org/x/text golang.org/x/lint/golint github.com/alecthomas/gocyclo github.com/securego/gosec/cmd/gosec
+
 .PHONY: imports
 imports:
 	@go list -f '{{ join .Imports "\n" }}' ./... | sort -u
@@ -114,8 +124,8 @@ imports:
 deps:
 	@go list -f '{{ join .Deps "\n" }}' ./... | sort -u
 
-.PHONY: check checksmake g
-check: fmt vet checkstyle cyclo secucheck
+.PHONY: check checks
+check: fmt vet checkstyle cyclo secucheck test
 checks: check
 
 .PHONY: fmt dofmt
@@ -147,7 +157,7 @@ secucheck: $(SOURCES) | _gosec_binary
 run: $(BINARY)
 	$(BINARY) $(RUNARGS)
 
-$(BINARY): $(SOURCES) |
+$(BINARY): $(SOURCES)
 	go build -ldflags "${LDFLAGS}" -o ${BINARY}
 
 .PHONY: install
@@ -160,7 +170,7 @@ clean:
 	if [ -f "$(BINARY)" ] ; then rm $(BINARY) ; fi
 	rm -fr $(COVERAGEREPORTDIR)
 	rm -fr $(DOCBUILDDIR)
-	rm -fr $(BUILDDIR)
+	-rmdir $(BUILDDIR) 2>/dev/null || true
 
 $(COVERAGEREPORTDIR):
 	mkdir -p $(COVERAGEREPORTDIR)
@@ -182,7 +192,7 @@ test-package/%: | $(COVERAGEREPORTDIR)
 .SECONDEXPANSION:
 COVERFILES=$(shell find $(COVERAGEREPORTDIR) -name '*.cover' -printf "%f\n" 2>/dev/null)
 html-cover: _html-cover | $(COVERAGEREPORTDIR)
-_html-cover: test $(addprefix html-cover-package/,$(COVERFILES))
+_html-cover: $(addprefix html-cover-package/,$(COVERFILES))
 
 html-cover-package/%: | $(COVERAGEREPORTDIR)
 	go tool cover -html=$(COVERAGEREPORTDIR)/$* -o $(COVERAGEREPORTDIR)/$(*:.cover=.html)

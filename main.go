@@ -24,23 +24,12 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/urfave/cli/v2"
+	"gitlab.com/orobardet/gitlab-ci-linter/config"
 	"math"
 	"net/url"
 	"os"
 	"path/filepath"
 )
-
-// APPNAME contains the application name
-var APPNAME = "gitlab-ci-linter"
-
-// VERSION contains the version of the program
-var VERSION = "0.0.0-dev"
-
-// REVISION contains the revision of the program
-var REVISION = "HEAD"
-
-// BUILDTIME contains the build date and time of the program
-var BUILDTIME = ""
 
 // The Gitlab instance root URL to use.
 var gitlabRootURL string
@@ -88,7 +77,7 @@ func processPathArgument(path string) {
 
 func main() {
 	cli.VersionPrinter = func(c *cli.Context) {
-		fmt.Printf("version=%s revision=%s built on=%s\n", VERSION, REVISION, BUILDTIME)
+		fmt.Printf("version=%s revision=%s built on=%s\n", config.VERSION, config.REVISION, config.BUILDTIME)
 	}
 
 	cli.AppHelpTemplate = `{{.Name}} - {{.Usage}}
@@ -110,8 +99,8 @@ Usage:
 {{end}}`
 
 	app := cli.NewApp()
-	app.Name = APPNAME
-	app.Version = fmt.Sprintf("%s (%s)", VERSION, REVISION[:int(math.Min(float64(len(REVISION)), 7))])
+	app.Name = config.APPNAME
+	app.Version = fmt.Sprintf("%s (%s)", config.VERSION, config.REVISION[:int(math.Min(float64(len(config.REVISION)), 7))])
 	app.Authors = []*cli.Author{
 		{Name: "Olivier ROBARDET"},
 	}
