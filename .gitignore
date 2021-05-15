@@ -6,3 +6,4 @@
 .build/
 *.exe
 /.idea/workspace.xml
+/bin/

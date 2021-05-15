@@ -9,14 +9,14 @@ It can be installed as a git pre-commit hook, preventing commit (and so push) of
 
 # Installation
 
-**Download the tool from the [releases page](https://gitlab.com/orobardet/gitlab-ci-linter/tags).**
+**Download the tool from the [releases page](https://gitlab.com/orobardet/gitlab-ci-linter/-/releases).**
 
 The tool is made in [Go](https://golang.org/). So it's cross platform and can be run in Linux, Windows, Mac or any other 
 operating system supported by Go.
 
 It is currently tested on Linux x64 (Ubuntu, WSL) and Windows x64 (7 and 10). 
 
-To install, just [download the binary](https://gitlab.com/orobardet/gitlab-ci-linter/tags) matching you system and put it somewhere (preferably in your `$PATH`).  
+To install, just [download the binary](https://gitlab.com/orobardet/gitlab-ci-linter/-/releases) matching you system and put it somewhere (preferably in your `$PATH`).  
 Upgrade is just overriding the binary with a new one.
 
 > For now, releases only build binaries for some common platforms, not all supported by Go.  
