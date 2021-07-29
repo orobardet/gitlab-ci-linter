@@ -141,6 +141,7 @@ Global options:
    --timeout value, -t value            timeout in second after which http request to Gitlab API will timeout (and the program will fails) (default: 5) [$GCL_TIMEOUT]
    --no-color, -n                       don't color output. By defaults the output is colorized if a compatible terminal is detected. (default: false) [$GCL_NOCOLOR]
    --verbose, -v                        verbose mode (default: false) [$GCL_VERBOSE]
+   --merged-yaml, -m                    include merged yaml in response (default: false) [$GCL_INCLUDE_MERGED_YAML]
    --help, -h                           show help (default: false)
    --version                            print the version information (default: false)
    
