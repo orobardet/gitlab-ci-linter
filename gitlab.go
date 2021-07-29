@@ -51,9 +51,10 @@ type GitlabAPILintRequest struct {
 
 // GitlabAPILintResponse struct represents the JSON body of a response from the Gitlab API /ci/lint
 type GitlabAPILintResponse struct {
-	Status string   `json:"status,omitempty"`
-	Error  string   `json:"error,omitempty"`
-	Errors []string `json:"errors,omitempty"`
+	Status     string   `json:"status,omitempty"`
+	Error      string   `json:"error,omitempty"`
+	Errors     []string `json:"errors,omitempty"`
+	MergedYaml string   `json:"merged_yaml,omitempty"`
 }
 
 // Search in the given directory a git repository directory
@@ -164,7 +165,7 @@ func lintGitlabCIUsingAPI(rootURL string, ciFileContent string) (status bool, ms
 	reqBody, _ := json.Marshal(reqParams)
 
 	// Prepare requesting the API
-	lintURL := rootURL + gitlabAPICiLintPath
+	lintURL := fmt.Sprintf("%s%s?include_merged_yaml=%t", rootURL, gitlabAPICiLintPath, includeMergedYaml)
 	if verboseMode {
 		fmt.Printf("Querying %s...\n", lintURL)
 	}
@@ -193,6 +194,10 @@ func lintGitlabCIUsingAPI(rootURL string, ciFileContent string) (status bool, ms
 	if err != nil {
 		err = fmt.Errorf("Unable to parse JSON response: %w", err)
 		return
+	}
+
+	if result.MergedYaml != "" {
+		fmt.Printf("Merged yaml: %s\n", result.MergedYaml)
 	}
 
 	// Analyse the results

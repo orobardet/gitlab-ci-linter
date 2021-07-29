@@ -1,3 +1,7 @@
+# vNext
+
+- Added a `--merged-yaml` option to allow merged yaml to be returned in response from gitlab API
+
 # v2.2.0
 
 - Add a `--personal-access-token` option specify a personal access token (e.g. when 2FA is enabled). Thanks @fhitche1 (!13)

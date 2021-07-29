@@ -56,6 +56,9 @@ var colorMode = true
 // Tells if verbose mode is on or off
 var verboseMode = false
 
+// Tells if the response should include the merged yaml from the Gitlab API
+var includeMergedYaml = false
+
 // Analyse a PATH argument, that can be a directory or file, to use it as a gitlab-ci file a a directory
 // where to start searching
 func processPathArgument(path string) {
@@ -167,6 +170,13 @@ Usage:
 			Usage:       "verbose mode",
 			EnvVars:     []string{"GCL_VERBOSE"},
 			Destination: &verboseMode,
+		},
+		&cli.BoolFlag{
+			Name:        "merged-yaml",
+			Aliases:     []string{"m"},
+			Usage:       "include merged yaml in response",
+			EnvVars:     []string{"GCL_INCLUDE_MERGED_YAML"},
+			Destination: &includeMergedYaml,
 		},
 	}
 	cli.VersionFlag = &cli.BoolFlag{
