@@ -6,4 +6,4 @@
   entry: gitlab-ci-linter
   language: golang
   types: [yaml]
-  files: .gitlab-ci.yml$
+  files: '\.gitlab-ci\.ya?ml$'
