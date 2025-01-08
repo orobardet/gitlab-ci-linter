@@ -163,51 +163,51 @@ release build darwin-386: *_binary_release
 release build darwin-amd64: *_binary_release
 
 # Build godoc
-.godoc: &_godoc
-  stage: build
-  script:
-    - mkdir -p $GOPATH/src/$HOSTED_PATH
-    - cp -r * $GOPATH/src/$HOSTED_PATH
-    - make godoc
-
-dev godoc:
-  <<: *_godoc
-  only:
-    - branches
-  artifacts:
-    name: "${CI_JOB_NAME}"
-    paths:
-      - $DOCBUILDDIR
-    expire_in: 1 week
-
-godoc:
-  <<: *_godoc
-  only:
-    - tags@orobardet/gitlab-ci-linter
-  artifacts:
-    name: "${CI_JOB_NAME}"
-    paths:
-      - $DOCBUILDDIR
-    expire_in: 1 year
+#.godoc: &_godoc
+#  stage: build
+#  script:
+#    - mkdir -p $GOPATH/src/$HOSTED_PATH
+#    - cp -r * $GOPATH/src/$HOSTED_PATH
+#    - make godoc
+#
+#dev godoc:
+#  <<: *_godoc
+#  only:
+#    - branches
+#  artifacts:
+#    name: "${CI_JOB_NAME}"
+#    paths:
+#      - $DOCBUILDDIR
+#    expire_in: 1 week
+#
+#godoc:
+#  <<: *_godoc
+#  only:
+#    - tags@orobardet/gitlab-ci-linter
+#  artifacts:
+#    name: "${CI_JOB_NAME}"
+#    paths:
+#      - $DOCBUILDDIR
+#    expire_in: 1 year
 
 ## -- Publishing stage --------------------------------------------------------
 
-pages:
-  stage: publish
-  environment:
-    name: Gitlab Pages
-    url: https://orobardet.gitlab.io/gitlab-ci-linter/
-  script:
-    - cp -r doc/pages public
-    - cp -r $COVERAGEREPORTDIR public/coverage
-    - cp -r $DOCBUILDDIR public/godoc
-  artifacts:
-    paths:
-      - public
-  only:
-    - master
-  except:
-    - tags
+#pages:
+#  stage: publish
+#  environment:
+#    name: Gitlab Pages
+#    url: https://orobardet.gitlab.io/gitlab-ci-linter/
+#  script:
+#    - cp -r doc/pages public
+#    - cp -r $COVERAGEREPORTDIR public/coverage
+#    - cp -r $DOCBUILDDIR public/godoc
+#  artifacts:
+#    paths:
+#      - public
+#  only:
+#    - master
+#  except:
+#    - tags
 
 #Update Release note:
 #  stage: releasenote
