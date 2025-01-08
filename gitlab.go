@@ -42,7 +42,8 @@ const gitlabCiFileName = ".gitlab-ci.yml"
 const defaultGitlabRootURL = "https://gitlab.com"
 
 // Path of the Gitlab CI lint API, to be used on the root url
-const gitlabAPICiLintPath = "/api/v4/ci/lint"
+const gitlabAPIProjectsPath = "/api/v4/projects/"
+const gitlabAPICiLintPath = "/ci/lint"
 
 // GitlabAPILintRequest struct represents the JSON body of a request sent to the Gitlab API /ci/lint
 type GitlabAPILintRequest struct {
@@ -51,10 +52,10 @@ type GitlabAPILintRequest struct {
 
 // GitlabAPILintResponse struct represents the JSON body of a response from the Gitlab API /ci/lint
 type GitlabAPILintResponse struct {
-	Status     string   `json:"status,omitempty"`
-	Error      string   `json:"error,omitempty"`
-	Errors     []string `json:"errors,omitempty"`
 	MergedYaml string   `json:"merged_yaml,omitempty"`
+	Warnings   []string `json:"warnings,omitempty"`
+	Errors     []string `json:"errors,omitempty"`
+	Valid      bool     `json:"valid,omitempty"`
 }
 
 // Search in the given directory a git repository directory
@@ -114,7 +115,9 @@ func checkGitlabAPIUrl(rootURL string) (string, error) {
 
 	newRootURL := rootURL
 
-	lintURL := rootURL + gitlabAPICiLintPath
+	apiCIEndpoint := gitlabAPIProjectsPath + projectID + gitlabAPICiLintPath
+
+	lintURL := rootURL + apiCIEndpoint
 
 	if verboseMode {
 		fmt.Printf("Checking '%s' (using '%s')...\n", rootURL, lintURL)
@@ -137,7 +140,7 @@ func checkGitlabAPIUrl(rootURL string) (string, error) {
 	lastURL := resp.Request.URL.String()
 
 	// Let's try to get the redirected root URL by removing the gitlab API path from the last use URL
-	lastRootURL := strings.TrimSuffix(lastURL, gitlabAPICiLintPath)
+	lastRootURL := strings.TrimSuffix(lastURL, apiCIEndpoint)
 	// If the result is not empty or unchanged, it means
 	if lastRootURL != "" && lastRootURL != lastURL {
 		newRootURL = lastRootURL
@@ -157,6 +160,8 @@ func lintGitlabCIUsingAPI(rootURL string, ciFileContent string) (status bool, ms
 	msgs = []string{}
 	status = false
 
+	apiCIEndpoint := gitlabAPIProjectsPath + projectID + gitlabAPICiLintPath
+
 	// Prepare the JSON content of the POST request:
 	// {
 	//   "content": "<ESCAPED CONTENT OF THE GITLAB-CI FILE>"
@@ -165,7 +170,7 @@ func lintGitlabCIUsingAPI(rootURL string, ciFileContent string) (status bool, ms
 	reqBody, _ := json.Marshal(reqParams)
 
 	// Prepare requesting the API
-	lintURL := fmt.Sprintf("%s%s?include_merged_yaml=%t", rootURL, gitlabAPICiLintPath, includeMergedYaml)
+	lintURL := fmt.Sprintf("%s%s", rootURL, apiCIEndpoint)
 	if verboseMode {
 		fmt.Printf("Querying %s...\n", lintURL)
 	}
@@ -196,23 +201,19 @@ func lintGitlabCIUsingAPI(rootURL string, ciFileContent string) (status bool, ms
 		return
 	}
 
-	if result.MergedYaml != "" {
+	if includeMergedYaml && result.MergedYaml != "" {
 		fmt.Printf("Merged yaml: %s\n", result.MergedYaml)
 	}
 
 	// Analyse the results
-	if result.Status == "valid" {
+	if result.Valid {
 		status = true
 		err = nil
 		return
 	}
 
-	if result.Status == "invalid" {
+	if !result.Valid {
 		msgs = result.Errors
-	}
-
-	if result.Error != "" {
-		err = fmt.Errorf("API respond  %s", result.Error)
 	}
 
 	return

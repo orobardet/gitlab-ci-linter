@@ -46,6 +46,9 @@ var directoryRoot string
 // Personal access token for accessing the repository when you have two factor authentication (2FA) enabled.
 var personalAccessToken string
 
+// The identifier of the GitLab project that is used in the API endpoint to validate the CI configuration.
+var projectID string
+
 // Timeout in seconds for HTTP request to the Gitlab API
 // Request will fail if lasting more than the timeout
 var httpRequestTimeout uint = 15
@@ -149,6 +152,14 @@ Usage:
 			Usage:       "personal access token `TOK` for accessing repositories when you have 2FA enabled",
 			EnvVars:     []string{"GCL_PERSONAL_ACCESS_TOKEN"},
 			Destination: &personalAccessToken,
+		},
+		&cli.StringFlag{
+			Name:        "project-id",
+			Aliases:     []string{"P"},
+			Value:       "",
+			Usage:       "`ID` of the GitLab project that is used in the API for Gitlab >=13.6",
+			EnvVars:     []string{"CI_PROJECT_ID"},
+			Destination: &projectID,
 		},
 		&cli.UintFlag{
 			Name:        "timeout",

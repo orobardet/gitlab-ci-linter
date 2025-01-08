@@ -123,6 +123,7 @@ include this tool in your `.pre-commit-config.yaml` like this:
 - This tool works (or should) with any instance of Gitlab: gitlab.com or custom instance.
 - It uses the url of the remote `origin` to guess the url of the Gitlab to use (also works if the remote is ssh, as soon as the Gitlab respond on HTTP using the same FQDN as ssh)
 - If the `/ci/lint` API is not publicly accessible (e.g. 2FA is enforced), you can specify a personal access token using `--personal-access-token|-p` option or `GCL_PERSONAL_ACCESS_TOKEN` environment variable. The token must have `api` scope. 
+- Original `/ci/lint` API endpoint was [deprecated](https://docs.gitlab.com/ee/update/deprecations.html?removal_milestone=16.0#post-cilint-api-endpoint-deprecated) in v15.7 and removed in v16.0. Now, `projects/:id/ci/lint` is used instead. You can specify the project ID using `--project-id|-P` option or `CI_PROJECT_ID` environment variable (predefined in Gitlab CI)
 
 ## --help 
 
@@ -138,6 +139,7 @@ Global options:
    --ci-file FILE, -f FILE              FILE is the relative or absolute path to the gitlab-ci file [$GCL_GITLAB_CI_FILE]
    --directory DIR, -d DIR              DIR is the directory from where to search for gitlab-ci file and git repository (default: ".") [$GCL_DIRECTORY]
    --personal-access-token TOK, -p TOK  personal access token TOK for accessing repositories when you have 2FA enabled [$GCL_PERSONAL_ACCESS_TOKEN]
+   --project-id ID, -P ID               ID of the GitLab project that is used in the API for Gitlab >=13.6 [$CI_PROJECT_ID]
    --timeout value, -t value            timeout in second after which http request to Gitlab API will timeout (and the program will fails) (default: 5) [$GCL_TIMEOUT]
    --no-color, -n                       don't color output. By defaults the output is colorized if a compatible terminal is detected. (default: false) [$GCL_NOCOLOR]
    --verbose, -v                        verbose mode (default: false) [$GCL_VERBOSE]
