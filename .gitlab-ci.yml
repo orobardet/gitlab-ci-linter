@@ -56,14 +56,6 @@ gosec:
   stage: checks
   script: make secucheck
 
-snyk:
-  stage: checks
-  script:
-    - snyk test
-    - snyk monitor
-  only:
-    - branches@orobardet/gitlab-ci-linter
-
 ## -- Test stage -------------------------------------------------------------
 
 # A test job template, to make different test jobs by branch/tags
