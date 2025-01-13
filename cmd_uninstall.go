@@ -22,9 +22,10 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
+
 	"github.com/fatih/color"
 	"github.com/urfave/cli/v2"
-	"path/filepath"
 )
 
 // 'uninstall' command of the program

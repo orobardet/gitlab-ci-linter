@@ -23,5 +23,5 @@
 //
 // The tool itself does not lint anything: it uses the lint API of a Gitlab instance => it needs to be run somewhere with an access to the Gitlab instance where your project come from.
 //
-//  Goodbye "yaml invalid" pipeline errors, and don't come back!
+//	Goodbye "yaml invalid" pipeline errors, and don't come back!
 package main

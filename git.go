@@ -22,11 +22,12 @@ package main
 
 import (
 	"errors"
-	"github.com/go-ini/ini"
 	"os"
 	"path"
 	"path/filepath"
 	"regexp"
+
+	"github.com/go-ini/ini"
 )
 
 // Name of the git repo directory

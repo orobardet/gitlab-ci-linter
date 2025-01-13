@@ -22,12 +22,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/urfave/cli/v2"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/fatih/color"
+	"github.com/urfave/cli/v2"
 )
 
 func getGitlabRootURL(gitRepoPath string) (string, error) {

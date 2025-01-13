@@ -1,4 +1,4 @@
-image: registry.gitlab.com/orobardet/gitlab-ci-linter/build:1.13
+image: registry.gitlab.com/orobardet/gitlab-ci-linter/build:1.23
 
 stages:
   - vendors
@@ -116,7 +116,7 @@ go test release:
   variables:
     DEBUG: "1"
   only:
-   - branches
+    - branches
   artifacts:
     name: "${CI_JOB_NAME}"
     paths:

@@ -1,9 +1,10 @@
 package config_test
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/orobardet/gitlab-ci-linter/config"
-	"testing"
 )
 
 func Test_APPNAME(t *testing.T) {

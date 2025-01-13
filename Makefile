@@ -82,7 +82,7 @@ PACKAGEPATHS:=$(shell go list -f "{{.Dir}}" ./...)
 .PHONY: all
 all: build
 
-.PHONY: has-depends _godoc_binary _golint_binary _gocyclo_binary _gosec_binary _upx_binary
+.PHONY: has-depends _godoc_binary _golint_binary _gocyclo_binary _gosec_binary
 
 _godoc_binary:
 	$(eval GODOC:=$(shell command -v godoc 2> /dev/null))
@@ -96,18 +96,14 @@ _gocyclo_binary:
 _gosec_binary:
 	$(eval GOSEC:=$(shell command -v gosec 2> /dev/null))
 	@test -n "$(GOSEC)" || echo "No gosec binary found, please install it: go get -u github.com/securego/gosec/cmd/gosec/..."
-_upx_binary:
-	$(eval UPX:=$(shell command -v upx 2> /dev/null))
-	@test -n "$(UPX)" || echo "No upx binary found, please install it: https://upx.github.io/"
 
-has-depends: _godoc_binary _golint_binary _gocyclo_binary _gosec_binary _upx_binary
+has-depends: _godoc_binary _golint_binary _gocyclo_binary _gosec_binary
 
 build: $(BINARY)
 
 .PHONY: release
 
-release: _upx_binary build
-	$(UPX) -9f --color $(BINARY)
+release: build
 
 rebuild: clean build
 

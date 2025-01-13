@@ -24,7 +24,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gitlab.com/orobardet/gitlab-ci-linter/config"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -33,6 +32,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"gitlab.com/orobardet/gitlab-ci-linter/config"
 )
 
 // Filename of a gitlab-ci file. Used to find the gitlab-ci file if no path are given at calls

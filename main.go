@@ -22,13 +22,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/urfave/cli/v2"
-	"gitlab.com/orobardet/gitlab-ci-linter/config"
 	"math"
 	"net/url"
 	"os"
 	"path/filepath"
+
+	"github.com/fatih/color"
+	"github.com/urfave/cli/v2"
+	"gitlab.com/orobardet/gitlab-ci-linter/config"
 )
 
 // The Gitlab instance root URL to use.
