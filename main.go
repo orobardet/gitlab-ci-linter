@@ -158,7 +158,7 @@ Usage:
 			Aliases:     []string{"P"},
 			Value:       "",
 			Usage:       "`ID` of the GitLab project that is used in the API for Gitlab >=13.6",
-			EnvVars:     []string{"CI_PROJECT_ID"},
+			EnvVars:     []string{"CI_PROJECT_ID", "GCL_PROJECT_ID"},
 			Destination: &projectID,
 		},
 		&cli.UintFlag{
