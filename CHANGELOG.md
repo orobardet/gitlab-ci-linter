@@ -1,5 +1,6 @@
 # vNext
 
+- Switch from deprecated v3 Gitlab API to v4. Thanks @SfinxNT (!20)
 - Added a `--merged-yaml` option to allow merged yaml to be returned in response from gitlab API
 
 # v2.2.0
