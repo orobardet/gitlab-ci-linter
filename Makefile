@@ -24,6 +24,10 @@
 
 export GO111MODULE?=on
 
+ifdef CI
+	export GOFLAGS+=-buildvcs=false
+endif
+
 SOURCEDIR=.
 BUILDDIR?=.build
 DOCBUILDDIR?=$(BUILDDIR)/godoc

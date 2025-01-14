@@ -4,6 +4,7 @@
 /vendor/
 /lint-gitlab-ci
 .build/
+_build/
 *.exe
 /.idea/workspace.xml
 /bin/

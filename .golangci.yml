@@ -1,0 +1,38 @@
+run:
+  tests: false
+
+output:
+  sort-results: true
+  show-stats: true
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    - errcheck
+    - errname
+    - gocyclo
+    - gofmt
+    - goimports
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - predeclared
+    - revive
+    - staticcheck
+    - unused
+
+linters-settings:
+  gocyclo:
+    min-complexity: 15
+
+  gofmt:
+    simplify: true
+    rewrite-rules:
+      - pattern: 'interface{}'
+        replacement: 'any'

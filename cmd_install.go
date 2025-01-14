@@ -43,7 +43,7 @@ func commandInstall(c *cli.Context) error {
 	}
 
 	if gitRepoPath == "" {
-		return cli.NewExitError(fmt.Sprintf("No GIT repository found, can't install a hook"), 5)
+		return cli.Exit("No GIT repository found, can't install a hook", 5)
 	}
 	if verboseMode {
 		fmt.Printf("Git repository found: %s\n", gitRepoPath)
@@ -52,7 +52,7 @@ func commandInstall(c *cli.Context) error {
 	// Extract origin remote url from repository config
 	remoteURL, err := getGitOriginRemoteURL(gitRepoPath)
 	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("Failed to find origin remote url in repository: %s", err), 5)
+		return cli.Exit(fmt.Sprintf("Failed to find origin remote url in repository: %s", err), 5)
 	}
 
 	// Check if we can use the origin remote url
@@ -60,7 +60,7 @@ func commandInstall(c *cli.Context) error {
 		// Guess gitlab url based on remote url
 		_, err = guessGitlabAPIFromGitRemoteURL(remoteURL)
 		if err != nil {
-			return cli.NewExitError(fmt.Sprintf("No valid and responding Gitlab API URL found from repository's origin remote, can't install a hook"), 5)
+			return cli.Exit("No valid and responding Gitlab API URL found from repository's origin remote, can't install a hook", 5)
 		}
 	} else if verboseMode {
 		// Warn user that we're defaulting because no origin remote was found
@@ -70,21 +70,21 @@ func commandInstall(c *cli.Context) error {
 
 	status, err := createGitHookLink(gitRepoPath, "pre-commit")
 	if err != nil {
-		return cli.NewExitError(err, 5)
+		return cli.Exit(err, 5)
 	}
 	switch status {
 	case HookAlreadyExists:
 		yellow := color.New(color.FgYellow).SprintFunc()
-		msg := fmt.Sprintf(yellow("A pre-commit hook already exists\nPlease install manually by adding a call to me in your pre-commit script."))
-		return cli.NewExitError(msg, 4)
+		msg := yellow("A pre-commit hook already exists\nPlease install manually by adding a call to me in your pre-commit script.")
+		return cli.Exit(msg, 4)
 	case HookAlreadyCreated:
 		cyan := color.New(color.FgCyan).SprintFunc()
-		fmt.Fprintf(color.Output, cyan("Already installed.\n"))
+		fmt.Fprintf(color.Output, "%s\n", cyan("Already installed."))
 	case HookCreated:
 		green := color.New(color.FgGreen).SprintFunc()
-		fmt.Fprintf(color.Output, green("Git pre-commit hook installed in %s\n"), filepath.Dir(gitRepoPath))
+		fmt.Fprintf(color.Output, "%s\n", green(fmt.Sprintf("Git pre-commit hook installed in %s", filepath.Dir(gitRepoPath))))
 	default:
-		return cli.NewExitError("Unkown error", 5)
+		return cli.Exit("Unkown error", 5)
 	}
 
 	return nil

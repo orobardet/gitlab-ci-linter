@@ -17,9 +17,8 @@ variables:
   BINARY_NAME: "gitlab-ci-linter"
   CI_GITLAB_URL: "https://gitlab.com"
   GOFLAGS: "-mod=vendor"
-  COVERAGEREPORTDIR: "coverage"
+  COVERAGEREPORTDIR: "_build/coverage"
   DOCBUILDDIR: "godoc"
-
 
 ## -- Vendor stage ------------------------------------------------------------
 
@@ -36,25 +35,11 @@ get vendors:
 
 ## -- Check stage -------------------------------------------------------------
 
-gofmt:
+lint:
+  image: golangci/golangci-lint
   stage: checks
-  script: make fmt
-
-govet:
-  stage: checks
-  script: make vet
-
-checkstyle:
-  stage: checks
-  script: make checkstyle
-
-gocyclo:
-  stage: checks
-  script: make cyclo
-
-gosec:
-  stage: checks
-  script: make secucheck
+  script:
+    - golangci-lint run
 
 ## -- Test stage -------------------------------------------------------------
 
@@ -64,8 +49,10 @@ gosec:
   variables:
     GOTESTFLAGS: -v
   script:
-    - make test
-    - make html-cover
+    - mkdir -p $COVERAGEREPORTDIR
+    - go test -cover --covermode=atomic --coverprofile=$COVERAGEREPORTDIR/main.cover ./...
+    - go tool cover -func $COVERAGEREPORTDIR/main.cover
+    - go tool cover -html $COVERAGEREPORTDIR/main.cover -o $COVERAGEREPORTDIR/main.html
   coverage: /^total:\s*\(statements\)\s*(\d+.\d+)\%/
 
 # Coverage on branches are only kept for 1 week

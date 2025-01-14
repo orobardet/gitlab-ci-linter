@@ -43,7 +43,7 @@ func commandUninstall(c *cli.Context) error {
 	}
 
 	if gitRepoPath == "" {
-		return cli.NewExitError(fmt.Sprintf("No GIT repository found, can't install a hook"), 5)
+		return cli.Exit("No GIT repository found, can't install a hook", 5)
 	}
 	if verboseMode {
 		fmt.Printf("Git repository found: %s\n", gitRepoPath)
@@ -51,21 +51,20 @@ func commandUninstall(c *cli.Context) error {
 
 	status, err := deleteGitHookLink(gitRepoPath, "pre-commit")
 	if err != nil {
-		return cli.NewExitError(err, 5)
+		return cli.Exit(err, 5)
 	}
 	switch status {
 	case HookNotMatching:
 		red := color.New(color.FgRed).SprintFunc()
-		msg := fmt.Sprintf(red("Unknown pre-commit hook\nPlease uninstall manually."))
-		return cli.NewExitError(msg, 4)
+		return cli.Exit(red("Unknown pre-commit hook\nPlease uninstall manually."), 4)
 	case HookNotExisting:
 		yellow := color.New(color.FgYellow).SprintFunc()
-		fmt.Fprintf(color.Output, yellow("No pre-commit hook found.\n"))
+		fmt.Fprintf(color.Output, "%s\n", yellow("No pre-commit hook found."))
 	case HookDeleted:
 		green := color.New(color.FgGreen).SprintFunc()
-		fmt.Fprintf(color.Output, green("Git pre-commit hook uinstalled.\n"))
+		fmt.Fprintf(color.Output, "%s\n", green("Git pre-commit hook uninstalled."))
 	default:
-		return cli.NewExitError("Unkown error", 5)
+		return cli.Exit("Unknown error", 5)
 	}
 
 	return nil

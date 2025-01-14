@@ -22,7 +22,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -109,7 +108,7 @@ func commandCheck(c *cli.Context) error {
 
 	localGitlabRootURL, err := getGitlabRootURL(gitRepoPath)
 	if err != nil {
-		return cli.NewExitError(err, 5)
+		return cli.Exit(err, 5)
 	}
 
 	fmt.Printf("Validating %s... ", relativeGitlabCiFilePath)
@@ -119,14 +118,14 @@ func commandCheck(c *cli.Context) error {
 	}
 
 	// Call the API to validate the gitlab-ci file
-	ciFileContent, err := ioutil.ReadFile(gitlabCiFilePath)
+	ciFileContent, err := os.ReadFile(gitlabCiFilePath)
 	if err != nil {
-		return cli.NewExitError(fmt.Sprintf("Error while reading '%s' file content: %s", relativeGitlabCiFilePath, err), 5)
+		return cli.Exit(fmt.Sprintf("Error while reading '%s' file content: %s", relativeGitlabCiFilePath, err), 5)
 	}
 
 	status, errorMessages, err := lintGitlabCIUsingAPI(localGitlabRootURL, string(ciFileContent))
 	if err != nil {
-		return cli.NewExitError(fmt.Errorf("Error linting using Gitlab API %s: %w", localGitlabRootURL, err), 5)
+		return cli.Exit(fmt.Errorf("Error linting using Gitlab API %s: %w", localGitlabRootURL, err), 5)
 	}
 
 	if !status {
@@ -140,7 +139,7 @@ func commandCheck(c *cli.Context) error {
 		messages := red(strings.Join(errorMessages, "\n"))
 		fmt.Fprintf(os.Stderr, "%s\n", messages)
 
-		return cli.NewExitError("", 10)
+		return cli.Exit("", 10)
 	}
 
 	if verboseMode {

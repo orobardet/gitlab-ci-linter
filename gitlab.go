@@ -24,7 +24,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -190,7 +190,7 @@ func lintGitlabCIUsingAPI(rootURL string, ciFileContent string) (status bool, ms
 	defer resp.Body.Close()
 
 	// Get the results
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		err = fmt.Errorf("Unable to parse response: %w", err)
 		return

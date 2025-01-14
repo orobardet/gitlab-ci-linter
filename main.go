@@ -52,10 +52,10 @@ var projectID string
 
 // Timeout in seconds for HTTP request to the Gitlab API
 // Request will fail if lasting more than the timeout
-var httpRequestTimeout uint = 15
+var httpRequestTimeout int64 = 15
 
 // Tells if output should be colorized or not
-var colorMode = true
+var colorMode = true //nolint:unused
 
 // Tells if verbose mode is on or off
 var verboseMode = false
@@ -83,7 +83,7 @@ func processPathArgument(path string) {
 }
 
 func main() {
-	cli.VersionPrinter = func(c *cli.Context) {
+	cli.VersionPrinter = func(_ *cli.Context) {
 		fmt.Printf("version=%s revision=%s built on=%s\n", config.VERSION, config.REVISION, config.BUILDTIME)
 	}
 
@@ -162,7 +162,7 @@ Usage:
 			EnvVars:     []string{"CI_PROJECT_ID", "GCL_PROJECT_ID"},
 			Destination: &projectID,
 		},
-		&cli.UintFlag{
+		&cli.Int64Flag{
 			Name:        "timeout",
 			Aliases:     []string{"t"},
 			Value:       httpRequestTimeout,
@@ -243,10 +243,10 @@ Usage:
 			directoryRoot, _ = filepath.Abs(directoryRoot)
 			fileInfo, err := os.Stat(directoryRoot)
 			if os.IsNotExist(err) {
-				return cli.NewExitError(fmt.Sprintf("'%s' does not exists", directoryRoot), 1)
+				return cli.Exit(fmt.Sprintf("'%s' does not exists", directoryRoot), 1)
 			}
 			if !fileInfo.IsDir() {
-				return cli.NewExitError(fmt.Sprintf("'%s' is not a directory", directoryRoot), 1)
+				return cli.Exit(fmt.Sprintf("'%s' is not a directory", directoryRoot), 1)
 			}
 		}
 
@@ -255,17 +255,17 @@ Usage:
 			gitlabCiFilePath, _ = filepath.Abs(gitlabCiFilePath)
 			fileInfo, err := os.Stat(gitlabCiFilePath)
 			if os.IsNotExist(err) {
-				return cli.NewExitError(fmt.Sprintf("'%s' does not exists", gitlabCiFilePath), 1)
+				return cli.Exit(fmt.Sprintf("'%s' does not exists", gitlabCiFilePath), 1)
 			}
 			if fileInfo.IsDir() {
-				return cli.NewExitError(fmt.Sprintf("'%s' is a directory, not a file", gitlabCiFilePath), 1)
+				return cli.Exit(fmt.Sprintf("'%s' is a directory, not a file", gitlabCiFilePath), 1)
 			}
 		}
 
 		if gitlabRootURL != "" {
 			u, err := url.Parse(gitlabRootURL)
 			if err != nil {
-				cli.NewExitError(fmt.Sprintf("Unable to parse gitlab root URL '%s': %s", gitlabRootURL, err), 1)
+				return cli.Exit(fmt.Sprintf("Unable to parse gitlab root URL '%s': %s", gitlabRootURL, err), 1)
 			}
 			if u.Scheme == "" {
 				u.Scheme = "https"
