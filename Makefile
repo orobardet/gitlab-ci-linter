@@ -86,22 +86,15 @@ PACKAGEPATHS:=$(shell go list -f "{{.Dir}}" ./...)
 .PHONY: all
 all: build
 
-.PHONY: has-depends _godoc_binary _golint_binary _gocyclo_binary _gosec_binary
+.PHONY: GORELEASER-exists GOLANGCI_LINT-exists
 
-_godoc_binary:
-	$(eval GODOC:=$(shell command -v godoc 2> /dev/null))
-	@test -n "$(GODOC)" || echo "No godoc binary found, please install it: go get -u golang.org/x/tools/cmd/godoc"
-_golint_binary:
-	$(eval GOLINT:=$(shell command -v golint 2> /dev/null))
-	@test -n "$(GOLINT)" || echo "No golint binary found, please install it: go get -u golang.org/x/lint/golint"
-_gocyclo_binary:
-	$(eval GOCYCLO:=$(shell command -v gocyclo 2> /dev/null))
-	@test -n "$(GOCYCLO)" || echo "No gocyclo binary found, please install it: go get -u github.com/alecthomas/gocyclo"
-_gosec_binary:
-	$(eval GOSEC:=$(shell command -v gosec 2> /dev/null))
-	@test -n "$(GOSEC)" || echo "No gosec binary found, please install it: go get -u github.com/securego/gosec/cmd/gosec/..."
+GORELEASER-exists:
+	@command -v goreleaser 2>&2 > /dev/null || (/bin/echo >&2 -e "\n\x1b[1m\x1b[31mNo goreleaser binary found, please install it with 'make setup' (or see https://goreleaser.com/)\x1b[0m" ; exit 1)
+	$(eval GORELEASER:=$(shell command -v goreleaser 2> /dev/null))
 
-has-depends: _godoc_binary _golint_binary _gocyclo_binary _gosec_binary
+GOLANGCI_LINT-exists:
+	@command -v golangci-lint 2>&2 > /dev/null || (/bin/echo >&2 -e "\n\x1b[1m\x1b[31mNo golangci-lint binary found, please install it with 'make setup' (or see https://golangci-lint.run/welcome/install/)\x1b[0m" ; exit 1)
+	$(eval GOLANGCI_LINT:=$(shell command -v golangci-lint 2> /dev/null))
 
 build: $(BINARY)
 
@@ -114,7 +107,8 @@ rebuild: clean build
 .PHONY: setup
 setup:
 	cd $(GOPATH)
-	go get -u golang.org/x/sys golang.org/x/text golang.org/x/lint/golint github.com/alecthomas/gocyclo github.com/securego/gosec/cmd/gosec
+	go install github.com/goreleaser/goreleaser@latest
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
 .PHONY: imports
 imports:
@@ -125,33 +119,12 @@ deps:
 	@go list -f '{{ join .Deps "\n" }}' ./... | sort -u
 
 .PHONY: check checks
-check: fmt vet checkstyle cyclo secucheck test
+check: lint test
 checks: check
 
-.PHONY: fmt dofmt
-dofmt: $(SOURCES)
-	gofmt -s -l -e -w $(SOURCES)
-
-.PHONY: fmt
-fmt: $(SOURCES)
-	@echo gofmt -s -l -e -d $(SOURCES)
-	@gofmtoutput=$$(gofmt -s -l -e -d $(SOURCES)) && echo "$$gofmtoutput" && [ -z "$$gofmtoutput" ]
-
-.PHONY: fmt
-vet: $(SOURCES)
-	go vet $(PACKAGES)
-
-.PHONY: checkstyle
-checkstyle: $(SOURCES) | _golint_binary
-	$(GOLINT) -set_exit_status $(PACKAGEPATHS)
-
-.PHONY: cyclo
-cyclo: $(SOURCES) | _gocyclo_binary
-	$(GOCYCLO) -avg -over $(CYCLOTHRESHOLD) $(PACKAGEPATHS)
-
-.PHONY: secucheck
-secucheck: $(SOURCES) | _gosec_binary
-	$(GOSEC) -fmt golint -quiet -log /dev/stdout ./...
+.PHONY: lint
+lint: GOLANGCI_LINT-exists $(SOURCES)
+	$(GOLANGCI_LINT) run
 
 .PHONY: run
 run: $(BINARY)
@@ -200,3 +173,7 @@ html-cover-package/%: | $(COVERAGEREPORTDIR)
 .PHONY: godoc
 godoc: _godoc_binary
 	ci/make-godoc.sh
+
+.PHONY: release-snapshot
+release-snapshot: GORELEASER-exists
+	$(GORELEASER) release --clean --snapshot --skip=publish

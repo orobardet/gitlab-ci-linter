@@ -1,37 +1,12 @@
-image: registry.gitlab.com/orobardet/gitlab-ci-linter/build:1.23
+# yaml-language-server: $schema=https://gitlab.com/gitlab-org/gitlab/-/raw/master/app/assets/javascripts/editor/schema/ci.json
 
 stages:
-  - vendors
   - checks
-  - tests
   - build
-  - publish
-  - latest
-  - releasenote
 
 variables:
-  AF_BINARY_URL: "https://api.bintray.com/"
-  AF_BINARY_SUBJECT: "orobardet"
-  AF_BINARY_REPO: "gitlab-ci-linter"
-  AF_BINARY_PACKAGE: "gitlab-ci-linter"
-  BINARY_NAME: "gitlab-ci-linter"
-  CI_GITLAB_URL: "https://gitlab.com"
-  GOFLAGS: "-mod=vendor"
+  CGO_ENABLED: 0
   COVERAGEREPORTDIR: "_build/coverage"
-  DOCBUILDDIR: "godoc"
-
-## -- Vendor stage ------------------------------------------------------------
-
-# Retrieve dependencies
-get vendors:
-  stage: vendors
-  script:
-    - go mod vendor
-  artifacts:
-    name: "${CI_JOB_NAME}_${CI_COMMIT_REF_NAME}"
-    paths:
-      - vendor/
-    expire_in: 1 hour
 
 ## -- Check stage -------------------------------------------------------------
 
@@ -50,7 +25,8 @@ govulncheck:
 
 # A test job template, to make different test jobs by branch/tags
 .go test: &_go_test_template
-  stage: tests
+  image: golang:1.23
+  stage: checks
   variables:
     GOTESTFLAGS: -v
   script:
@@ -82,130 +58,30 @@ go test release:
 
 ## -- Build stage -------------------------------------------------------------
 
-# Job template to build a go binary from source, for a given platform and architecture.
-# The job name contains pf and arch: job name is supposed to ends with "PF-ARCH"
-# e.g.:
-# - build dev linux-amd64
-# - release build linux-i386
-.build_binary: &_binary
+dev build:
   stage: build
+  image:
+    name: goreleaser/goreleaser
+    entrypoint: [""]
+  rules:
+    - if: $CI_COMMIT_BRANCH
   script:
-    - export GOTARGET=${CI_JOB_NAME##* }
-    - export GOOS=${GOTARGET%%-*}
-    - export GOARCH=${GOTARGET##*-}
-    - export EXT="$([[ "$GOOS" = "windows" ]] && echo ".exe")"
-    - export BINARY=bin/${BINARY_NAME}.${GOOS}-${GOARCH}${EXT}
-    - if [[ $VERSION ]] ; then export VERSION=${VERSION##v} ; fi
-    - if [[ "$RELEASE" -eq 1 ]] ; then make release ; else make build ; fi
-    - if [[ "$UPLOAD" -eq 1 ]] ; then curl -T $BINARY -u${AF_API_USER}:${AF_API_KEY} "$AF_BINARY_URL/content/$AF_BINARY_SUBJECT/$AF_BINARY_REPO/$AF_BINARY_PACKAGE/${VERSION}/v${VERSION}/$(basename $BINARY)?override=1&publish=1" ; fi
-
-# Job template for building **development** binary, using general build job template and adding:
-# - Enable debug
-# - Only on branches
-# - Binary kept as artifact for a week
-.build_binary_dev: &_binary_dev
-  <<: *_binary
-  variables:
-    DEBUG: "1"
-  only:
-    - branches
+    - goreleaser release --clean --snapshot --skip=publish
   artifacts:
-    name: "${CI_JOB_NAME}"
     paths:
-      - bin/*
+      - .build/dist/
     expire_in: 1 week
 
-# Job template for building **release** binary, using general build job template and adding:
-# - Versioning
-# - Release optimization
-# - Only on tags
-# - Binary kept as artifact for a year (much longer than dev build)
-.build_binary_release: &_binary_release
-  <<: *_binary
+release:
+  stage: build
+  image:
+    name: goreleaser/goreleaser
+    entrypoint: [""]
+  rules:
+    - if: $CI_COMMIT_TAG && '$CI_COMMIT_TAG =~ /^v\d+.\d+.\d+$/'
   variables:
-    VERSION: ${CI_COMMIT_TAG}
-    RELEASE: "1"
-    UPLOAD: "1"
-  only:
-    - tags@orobardet/gitlab-ci-linter
-  artifacts:
-    name: "${CI_JOB_NAME}"
-    paths:
-      - bin/*
-    expire_in: 1 year
-
-# Jobs to build dev binaries
-#dev build linux-386: *_binary_dev
-#dev build linux-amd64: *_binary_dev
-#dev build linux-arm: *_binary_dev
-#dev build linux-arm64: *_binary_dev
-#dev build windows-386: *_binary_dev
-#dev build windows-amd64: *_binary_dev
-#dev build darwin-386: *_binary_dev
-#dev build darwin-amd64: *_binary_dev
-
-# Jobs release binaries
-#release build linux-386: *_binary_release
-#release build linux-amd64: *_binary_release
-#release build linux-arm: *_binary_release
-#release build linux-arm64: *_binary_release
-#release build windows-386: *_binary_release
-#release build windows-amd64: *_binary_release
-#release build darwin-386: *_binary_release
-#release build darwin-amd64: *_binary_release
-
-# Build godoc
-#.godoc: &_godoc
-#  stage: build
-#  script:
-#    - mkdir -p $GOPATH/src/$HOSTED_PATH
-#    - cp -r * $GOPATH/src/$HOSTED_PATH
-#    - make godoc
-#
-#dev godoc:
-#  <<: *_godoc
-#  only:
-#    - branches
-#  artifacts:
-#    name: "${CI_JOB_NAME}"
-#    paths:
-#      - $DOCBUILDDIR
-#    expire_in: 1 week
-#
-#godoc:
-#  <<: *_godoc
-#  only:
-#    - tags@orobardet/gitlab-ci-linter
-#  artifacts:
-#    name: "${CI_JOB_NAME}"
-#    paths:
-#      - $DOCBUILDDIR
-#    expire_in: 1 year
-
-## -- Publishing stage --------------------------------------------------------
-
-#pages:
-#  stage: publish
-#  environment:
-#    name: Gitlab Pages
-#    url: https://orobardet.gitlab.io/gitlab-ci-linter/
-#  script:
-#    - cp -r doc/pages public
-#    - cp -r $COVERAGEREPORTDIR public/coverage
-#    - cp -r $DOCBUILDDIR public/godoc
-#  artifacts:
-#    paths:
-#      - public
-#  only:
-#    - master
-#  except:
-#    - tags
-
-#Update Release note:
-#  stage: releasenote
-#  allow_failure: true
-#  variables:
-#    VERSION: ${CI_COMMIT_TAG}
-#  script: ci/update-gitlab-release.sh
-#  only:
-#    - tags@orobardet/gitlab-ci-linter
+    # Disable shallow cloning so that goreleaser can diff between tags to
+    # generate a changelog.
+    GIT_DEPTH: 0
+  script:
+    - goreleaser release --clean

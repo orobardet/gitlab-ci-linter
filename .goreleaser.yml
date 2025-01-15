@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+project_name: gitlab-ci-linter
+dist: .build/dist
+env:
+  - CGO_ENABLED=0
+  - MAIN_PACKAGE_PATH=gitlab.com/orobardet/gitlab-ci-linter/
+  - CI={{ if index .Env "CI"  }}{{.Env.CI}}{{ else }}{{ end }}
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - id: gitlab-ci-linter
+    binary: gitlab-ci-linter
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm
+      - goos: darwin
+        goarch: 386
+      - goos: darwin
+        goarch: arm
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X {{.Env.MAIN_PACKAGE_PATH}}config.VERSION={{.Version}} -X {{.Env.MAIN_PACKAGE_PATH}}config.REVISION={{.FullCommit}} -X {{.Env.MAIN_PACKAGE_PATH}}config.BUILDTIME={{ time "2006-01-02T15:04:05-0700" }}
+archives:
+  - id: binaries-gitlab-ci-linter
+    builds:
+      - gitlab-ci-linter
+    format: binary
+nfpms:
+  - id: debian-gitlab-ci-linter
+    package_name: gitlab-ci-linter
+    builds:
+      - gitlab-ci-linter
+    formats:
+      - apk
+      - deb
+      - rpm
+    vendor: Olivier Robardet
+    maintainer: Olivier Robardet
+    homepage: https://gitlab.com/orobardet/gitlab-ci-linter
+    description: .gitlab-ci.yml linter, using online Gitlab lint API (gitlab.com or self-hosted)
+    deb:
+      lintian_overrides:
+        - statically-linked-binary
+        - changelog-file-missing-in-native-package
+        - extended-description-is-empty
+        - no-copyright-file
+        - no-manual-page
+        - unknown-section
+checksum:
+  name_template: 'checksums.txt'
+  disable: false
+snapshot:
+  version_template: "{{ .Version }}-dev"
+changelog:
+  sort: desc
+release:
+  gitlab:
+    owner: orobardet
+    name: gitlab-ci-linter
+  skip_upload: false
+gitlab_urls:
+  use_package_registry: true
+  use_job_token: false
