@@ -41,7 +41,12 @@ lint:
   script:
     - golangci-lint run
 
-## -- Test stage -------------------------------------------------------------
+govulncheck:
+  image: golang:1.23
+  stage: checks
+  script:
+    - go install golang.org/x/vuln/cmd/govulncheck@latest
+    - govulncheck -show color ./...
 
 # A test job template, to make different test jobs by branch/tags
 .go test: &_go_test_template
