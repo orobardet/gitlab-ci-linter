@@ -26,6 +26,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/urfave/cli/v2"
@@ -262,6 +263,7 @@ Usage:
 			}
 		}
 
+		gitlabRootURL = strings.TrimSpace(gitlabRootURL)
 		if gitlabRootURL != "" {
 			u, err := url.Parse(gitlabRootURL)
 			if err != nil {

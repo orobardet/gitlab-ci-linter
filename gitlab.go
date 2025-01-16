@@ -98,6 +98,9 @@ func initGitlabHTTPClientRequest(method string, url string, content string) (*ht
 	}
 
 	req, err := http.NewRequest(method, url, strings.NewReader(content))
+	if err != nil {
+		return nil, nil, err
+	}
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("User-Agent", fmt.Sprintf("%s/%s", config.APPNAME, config.VERSION))
@@ -105,7 +108,7 @@ func initGitlabHTTPClientRequest(method string, url string, content string) (*ht
 		req.Header.Add("PRIVATE-TOKEN", personalAccessToken)
 	}
 
-	return httpClient, req, err
+	return httpClient, req, nil
 }
 
 // Check if we can get a response with the rootUrl on the API CI Lint endpoint, and if a redirection occurs
