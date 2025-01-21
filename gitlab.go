@@ -150,6 +150,10 @@ func checkGitlabAPIUrl(rootURL string, lintURL string, apiCIEndpoint string) (st
 		}
 	}
 
+	if resp.StatusCode != 200 {
+		return newLintURL, fmt.Errorf("HTTP request failed with status %s", resp.Status)
+	}
+
 	if verboseMode {
 		fmt.Printf("Url '%s' validated\n", newLintURL)
 	}
@@ -177,7 +181,7 @@ func lintGitlabCIUsingAPI(lintURL string, ciFileContent string) (status bool, ms
 	}
 	httpClient, req, err := initGitlabHTTPClientRequest("POST", lintURL, string(reqBody))
 	if err != nil {
-		err = fmt.Errorf("Unable to create an HTTP client: %w", err)
+		err = fmt.Errorf("unable to create an HTTP client: %w", err)
 		return
 	}
 
@@ -189,16 +193,21 @@ func lintGitlabCIUsingAPI(lintURL string, ciFileContent string) (status bool, ms
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 200 {
+		err = fmt.Errorf("HTTP request failed with status %s", resp.Status)
+		return
+	}
+
 	// Get the results
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		err = fmt.Errorf("Unable to parse response: %w", err)
+		err = fmt.Errorf("unable to parse response: %w", err)
 		return
 	}
 	var result GitlabAPILintResponse
 	err = json.Unmarshal([]byte(body), &result)
 	if err != nil {
-		err = fmt.Errorf("Unable to parse JSON response: %w", err)
+		err = fmt.Errorf("unable to parse JSON response: %w", err)
 		return
 	}
 

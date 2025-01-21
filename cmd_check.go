@@ -120,12 +120,12 @@ func commandCheck(c *cli.Context) error {
 	// Call the API to validate the gitlab-ci file
 	ciFileContent, err := os.ReadFile(gitlabCiFilePath)
 	if err != nil {
-		return cli.Exit(fmt.Sprintf("Error while reading '%s' file content: %s", relativeGitlabCiFilePath, err), 5)
+		return cli.Exit(fmt.Sprintf("error while reading '%s' file content: %s", relativeGitlabCiFilePath, err), 5)
 	}
 
 	status, errorMessages, err := lintGitlabCIUsingAPI(localGitlabLintURL, string(ciFileContent))
 	if err != nil {
-		return cli.Exit(fmt.Errorf("Error linting using Gitlab API %s: %w", localGitlabLintURL, err), 5)
+		return cli.Exit(fmt.Errorf("error linting using Gitlab API %s: %w", localGitlabLintURL, err), 5)
 	}
 
 	if !status {
