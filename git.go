@@ -26,6 +26,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/go-ini/ini"
 )
@@ -71,7 +72,7 @@ func loadGitCfg(gitDirectory string) (*ini.File, error) {
 	return cfg, nil
 }
 
-// Extract the origin remote remote url from a git config file
+// Extract the origin remote url from a git config file
 func getGitOriginRemoteURL(gitDirectory string) (string, error) {
 	cfg, err := loadGitCfg(gitDirectory)
 	if err != nil {
@@ -87,20 +88,23 @@ func getGitOriginRemoteURL(gitDirectory string) (string, error) {
 }
 
 // Transform a git remote url, that can be a full http ou ssh url, to a simple http FQDN host
-func httpiseRemoteURL(remoteURL string) string {
-	re := regexp.MustCompile("^(https?://[^/]*).*$")
+// Returns the root URL, and the project path.
+// e.g.: a remote "https://gitlab.com/orobardet/gitlab-ci-linter.git" or
+// "git@gitlab.com:orobardet/gitlab-ci-linter.git" will both returns "https://gitlab.com", "orobardet/gitlab-ci-linter"
+func parseGitRemoteURL(remoteURL string) (string, string) {
+	re := regexp.MustCompile(`^(https?://[^/]*)(.*?)(?:\.git)?$`)
 	if re.MatchString(remoteURL) { // http remote
 		matches := re.FindStringSubmatch(remoteURL)
 		if len(matches) >= 2 {
-			return matches[1]
+			return matches[1], strings.TrimLeft(matches[2], "/")
 		}
 	} else { // ssh remote
-		re = regexp.MustCompile("^([^@]*@)?([^:]+)")
+		re = regexp.MustCompile(`^([^@]*@)?([^:]+):(.*?)(?:\.git)?$`)
 		matches := re.FindStringSubmatch(remoteURL)
 		if len(matches) >= 3 {
-			return "https://" + matches[2]
+			return "https://" + matches[2], strings.TrimLeft(matches[3], "/")
 		}
 	}
 
-	return ""
+	return "", ""
 }

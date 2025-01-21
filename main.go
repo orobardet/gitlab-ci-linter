@@ -48,6 +48,9 @@ var directoryRoot string
 // Personal access token for accessing the repository when you have two factor authentication (2FA) enabled.
 var personalAccessToken string
 
+// The project path (namespace + name) of the GitLab project that is used in the API endpoint to validate the CI configuration.
+var projectPath string
+
 // The identifier of the GitLab project that is used in the API endpoint to validate the CI configuration.
 var projectID string
 
@@ -94,6 +97,16 @@ version {{if .Version}}{{.Version}}{{end}}
 
 Usage:
    {{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} [command [command options]]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}
+
+   The used Gitlab API is tied to a Gitlab project. Thus, the tools needs to know which Gitlab project (on which Gitlab instance) it has to target.
+   By default, it will try to autodetect from the 'origin' remote configured in the git repository (if any), by extracting the FQDN as the root URL, 
+   and the project path. Works for 'http'' or 'ssh' remotes. e.g.: a remote "https://gitlab.com/orobardet/gitlab-ci-linter.git" or
+   "git@gitlab.com:orobardet/gitlab-ci-linter.git" will target the API of the project "orobardet/gitlab-ci-linter" on "https://gitlab.com".
+
+   In case the auto-detection does not work, or you don't have a compatible remote, or you want to target another project, you can specify the Gitlab
+   root URL using '-gitlab-url|-u' flag, and the project using '--project-path|-P' or '--project-id|-I' flags. '--project-id' has precedence over '--project-path'.
+
+   If your gitlab instance or project needs an authentification (which is the case on gitlab.com), you have to specify a personal access token with '--personal-access-token|-p'.
 
 {{if .VisibleFlags}}Global options:
    {{range .VisibleFlags}}{{.}}
@@ -156,10 +169,18 @@ Usage:
 			Destination: &personalAccessToken,
 		},
 		&cli.StringFlag{
-			Name:        "project-id",
+			Name:        "project-path",
 			Aliases:     []string{"P"},
 			Value:       "",
-			Usage:       "`ID` of the GitLab project that is used in the API for Gitlab >=13.6",
+			Usage:       "`PATH` of the GitLab project that is used in the API for Gitlab >=13.6. Has precedence over path guessing from remote",
+			EnvVars:     []string{"CI_PROJECT_PATH", "GCL_PROJECT_PATH"},
+			Destination: &projectPath,
+		},
+		&cli.StringFlag{
+			Name:        "project-id",
+			Aliases:     []string{"I"},
+			Value:       "",
+			Usage:       "`ID` of the GitLab project that is used in the API for Gitlab >=13.6. Has precedence over --project-path",
 			EnvVars:     []string{"CI_PROJECT_ID", "GCL_PROJECT_ID"},
 			Destination: &projectID,
 		},
@@ -274,6 +295,9 @@ Usage:
 			}
 			gitlabRootURL = u.String()
 		}
+
+		projectPath = strings.TrimSpace(projectPath)
+		projectID = strings.TrimSpace(projectID)
 
 		return nil
 	}

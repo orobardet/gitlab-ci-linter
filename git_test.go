@@ -25,34 +25,40 @@ import (
 )
 
 var httpiseRemoteURLData = [][]string{
-	{"http://gitlab.com", "http://gitlab.com"},
-	{"https://gitlab.com", "https://gitlab.com"},
-	{"http://gitlab.com/my/project", "http://gitlab.com"},
-	{"https://gitlab.com/my/project", "https://gitlab.com"},
-	{"http://my.company-forge.com/", "http://my.company-forge.com"},
-	{"https://my.company-forge.com", "https://my.company-forge.com"},
-	{"http://my.company-forge.com/my/project", "http://my.company-forge.com"},
-	{"https://my.company-forge.com/my/project", "https://my.company-forge.com"},
-	{"git@gitlab.com", "https://gitlab.com"},
-	{"git@gitlab.com:my/project", "https://gitlab.com"},
-	{"git@my.company-forge.com", "https://my.company-forge.com"},
-	{"git@my.company-forge.com:my/project", "https://my.company-forge.com"},
-	{"gitlab.com", "https://gitlab.com"},
-	{"gitlab.com:my/project", "https://gitlab.com"},
-	{"my.company-forge.com", "https://my.company-forge.com"},
-	{"my.company-forge.com:my/project", "https://my.company-forge.com"},
-	{"", ""},
+	{"http://gitlab.com", "http://gitlab.com", ""},
+	{"https://gitlab.com", "https://gitlab.com", ""},
+	{"http://gitlab.com/my/project", "http://gitlab.com", "my/project"},
+	{"https://gitlab.com/my/project", "https://gitlab.com", "my/project"},
+	{"http://my.company-forge.com/", "http://my.company-forge.com", ""},
+	{"https://my.company-forge.com", "https://my.company-forge.com", ""},
+	{"http://my.company-forge.com/my/project", "http://my.company-forge.com", "my/project"},
+	{"https://my.company-forge.com/my/project", "https://my.company-forge.com", "my/project"},
+	{"git@gitlab.com:my/project", "https://gitlab.com", "my/project"},
+	{"git@my.company-forge.com:my/project", "https://my.company-forge.com", "my/project"},
+	{"gitlab.com:my/project", "https://gitlab.com", "my/project"},
+	{"my.company-forge.com:my/project", "https://my.company-forge.com", "my/project"},
+	{"https://gitlab.com/my/long/namespace/with/project", "https://gitlab.com", "my/long/namespace/with/project"},
+	{"git@gitlab.com:my/long/namespace/with/project", "https://gitlab.com", "my/long/namespace/with/project"},
+	{"https://gitlab.com/my/project.git", "https://gitlab.com", "my/project"},
+	{"git@gitlab.com:my/project.git", "https://gitlab.com", "my/project"},
+	{"https://gitlab.com/my/long/namespace/with/project.git", "https://gitlab.com", "my/long/namespace/with/project"},
+	{"git@gitlab.com:my/long/namespace/with/project.git", "https://gitlab.com", "my/long/namespace/with/project"},
+	{"", "", ""},
 }
 
 func TestHttpiseRemoteUrl(t *testing.T) {
 
 	for _, testData := range httpiseRemoteURLData {
 		params := testData[0]
-		expectedResult := testData[1]
+		expectedRoot := testData[1]
+		expectedPath := testData[2]
 		t.Run("url="+params, func(t *testing.T) {
-			result := httpiseRemoteURL(params)
-			if result != expectedResult {
-				t.Errorf("received '%s' while expecting '%s'", result, expectedResult)
+			root, path := parseGitRemoteURL(params)
+			if root != expectedRoot {
+				t.Errorf("received root URL '%s' while expecting '%s'", root, expectedRoot)
+			}
+			if path != expectedPath {
+				t.Errorf("received path '%s' while expecting '%s'", path, expectedPath)
 			}
 		})
 	}

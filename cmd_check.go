@@ -30,7 +30,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func getGitlabRootURL(gitRepoPath string) (string, error) {
+func getGitlabLintURL(gitRepoPath string) (string, error) {
 	// If a gitlab URL was given as parameter, just use it
 	if gitlabRootURL != "" {
 		return gitlabRootURL, nil
@@ -106,7 +106,7 @@ func commandCheck(c *cli.Context) error {
 		gitRepoPath, _ = findGitRepo(directoryRoot)
 	}
 
-	localGitlabRootURL, err := getGitlabRootURL(gitRepoPath)
+	localGitlabLintURL, err := getGitlabLintURL(gitRepoPath)
 	if err != nil {
 		return cli.Exit(err, 5)
 	}
@@ -123,9 +123,9 @@ func commandCheck(c *cli.Context) error {
 		return cli.Exit(fmt.Sprintf("Error while reading '%s' file content: %s", relativeGitlabCiFilePath, err), 5)
 	}
 
-	status, errorMessages, err := lintGitlabCIUsingAPI(localGitlabRootURL, string(ciFileContent))
+	status, errorMessages, err := lintGitlabCIUsingAPI(localGitlabLintURL, string(ciFileContent))
 	if err != nil {
-		return cli.Exit(fmt.Errorf("Error linting using Gitlab API %s: %w", localGitlabRootURL, err), 5)
+		return cli.Exit(fmt.Errorf("Error linting using Gitlab API %s: %w", localGitlabLintURL, err), 5)
 	}
 
 	if !status {

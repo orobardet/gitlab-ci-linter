@@ -27,6 +27,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -112,16 +113,12 @@ func initGitlabHTTPClientRequest(method string, url string, content string) (*ht
 }
 
 // Check if we can get a response with the rootUrl on the API CI Lint endpoint, and if a redirection occurs
-// If a redirection is detected, return the redirected root URL.
+// If a redirection is detected, return the redirected URL.
 // This is needed as redirection response only occurs when the API is call using en HTTP GET, but in the en the API
 // has to be called in POST
-func checkGitlabAPIUrl(rootURL string) (string, error) {
+func checkGitlabAPIUrl(rootURL string, lintURL string, apiCIEndpoint string) (string, error) {
 
-	newRootURL := rootURL
-
-	apiCIEndpoint := gitlabAPIProjectsPath + projectID + gitlabAPICiLintPath
-
-	lintURL := rootURL + apiCIEndpoint
+	newLintURL := lintURL
 
 	if verboseMode {
 		fmt.Printf("Checking '%s' (using '%s')...\n", rootURL, lintURL)
@@ -129,14 +126,14 @@ func checkGitlabAPIUrl(rootURL string) (string, error) {
 
 	httpClient, req, err := initGitlabHTTPClientRequest("GET", lintURL, "")
 	if err != nil {
-		return newRootURL, fmt.Errorf("Unable to create an HTTP client: %w", err)
+		return newLintURL, fmt.Errorf("Unable to create an HTTP client: %w", err)
 	}
 
 	resp, err := httpClient.Do(req)
 
 	if err != nil {
 		fmt.Printf("%+v\n", req.Header)
-		return newRootURL, fmt.Errorf("HTTP request error: %w", err)
+		return newLintURL, fmt.Errorf("HTTP request error: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -145,26 +142,27 @@ func checkGitlabAPIUrl(rootURL string) (string, error) {
 
 	// Let's try to get the redirected root URL by removing the gitlab API path from the last use URL
 	lastRootURL := strings.TrimSuffix(lastURL, apiCIEndpoint)
-	// If the result is not empty or unchanged, it means
+	// If the result is not empty or unchanged, it means there were redirects
 	if lastRootURL != "" && lastRootURL != lastURL {
-		newRootURL = lastRootURL
+		newLintURL, err = url.JoinPath(lastRootURL, apiCIEndpoint)
+		if err != nil {
+			return newLintURL, err
+		}
 	}
 
 	if verboseMode {
-		fmt.Printf("Url '%s' validated\n", newRootURL)
+		fmt.Printf("Url '%s' validated\n", newLintURL)
 	}
 
-	return newRootURL, nil
+	return newLintURL, nil
 }
 
 // Send the content of a gitlab-ci file to a Gitlab instance lint API to check its validity
 // In case of invalid, lint error messages are returned in `msgs`
-func lintGitlabCIUsingAPI(rootURL string, ciFileContent string) (status bool, msgs []string, err error) {
+func lintGitlabCIUsingAPI(lintURL string, ciFileContent string) (status bool, msgs []string, err error) {
 
 	msgs = []string{}
 	status = false
-
-	apiCIEndpoint := gitlabAPIProjectsPath + projectID + gitlabAPICiLintPath
 
 	// Prepare the JSON content of the POST request:
 	// {
@@ -174,7 +172,6 @@ func lintGitlabCIUsingAPI(rootURL string, ciFileContent string) (status bool, ms
 	reqBody, _ := json.Marshal(reqParams)
 
 	// Prepare requesting the API
-	lintURL := fmt.Sprintf("%s%s", rootURL, apiCIEndpoint)
 	if verboseMode {
 		fmt.Printf("Querying %s...\n", lintURL)
 	}
@@ -223,15 +220,43 @@ func lintGitlabCIUsingAPI(rootURL string, ciFileContent string) (status bool, ms
 	return
 }
 
-func guessGitlabAPIFromGitRemoteURL(remoteURL string) (apiRootURL string, err error) {
-	httpRemoteURL, err := checkGitlabAPIUrl(httpiseRemoteURL(remoteURL))
+func computeGitlabProjectPath(path string) string {
+	if projectID != "" {
+		return projectID
+	}
+
+	if projectPath != "" {
+		return url.QueryEscape(projectPath)
+	}
+
+	return url.QueryEscape(path)
+}
+
+func guessGitlabAPIFromGitRemoteURL(remoteURL string) (lintURL string, err error) {
+	rootURL, prjPath := parseGitRemoteURL(remoteURL)
+
+	prjPath = computeGitlabProjectPath(prjPath)
+	if prjPath == "" {
+		return "", errors.New("unable to determine Gitlab project path, you can use --project-path|-P|$GCL_PROJECT_PATH or --project-id|-I|$GCL_PROJECT_ID, to give the path or ID of your Gitlab project")
+	}
+
+	apiCIEndpoint, err := url.JoinPath(gitlabAPIProjectsPath, prjPath, gitlabAPICiLintPath)
 	if err != nil {
 		return "", err
 	}
-	if httpRemoteURL != "" {
-		apiRootURL = httpRemoteURL
+
+	lintURL, err = url.JoinPath(rootURL, apiCIEndpoint)
+	if err != nil {
+		return "", err
+	}
+
+	lintURL, err = checkGitlabAPIUrl(rootURL, lintURL, apiCIEndpoint)
+	if err != nil {
+		return "", err
+	}
+	if lintURL != "" {
 		if verboseMode {
-			fmt.Printf("API url found: %s\n", httpRemoteURL)
+			fmt.Printf("API url found: %s\n", lintURL)
 		}
 	} else {
 		return "", errors.New("Unknown error occurs")

@@ -34,7 +34,7 @@ And a git repository to check of course, having an `origin` remote corresponding
 
 ## Migrating from old bash script version
 
-If you don't want to/can't update your existing repositories with a a pre-commit hook to the old bash script, the best 
+If you don't want to/can't update your existing repositories with a pre-commit hook to the old bash script, the best 
 way is to replace the script with a symlink to the new binary. It's a drop-in replacement.
 
 But it would be better to remove (manually) the previous pre-commit hook link, and then install the new go version:
@@ -68,6 +68,7 @@ You don't need to be in the root of the git repository:
 cd ~/dev/my-super-project/src/public
 gitlab-ci-linter
 ```
+
 If the `.gitlab-ci.yml` is invalid:
 
 ![Arg! An error!](doc/screen-standalone-ko.png)
@@ -121,9 +122,13 @@ include this tool in your `.pre-commit-config.yaml` like this:
 
 - If no `.gitlab-ci.yml` is detected in the git repository root, the tool does nothing (if installed as pre-commit hook, it will not prevent the commit).
 - This tool works (or should) with any instance of Gitlab: gitlab.com or custom instance.
-- It uses the url of the remote `origin` to guess the url of the Gitlab to use (also works if the remote is ssh, as soon as the Gitlab respond on HTTP using the same FQDN as ssh)
-- If the `/ci/lint` API is not publicly accessible (e.g. 2FA is enforced), you can specify a personal access token using `--personal-access-token|-p` option or `GCL_PERSONAL_ACCESS_TOKEN` environment variable. The token must have `api` scope. 
-- Original `/ci/lint` API endpoint was [deprecated](https://docs.gitlab.com/ee/update/deprecations.html?removal_milestone=16.0#post-cilint-api-endpoint-deprecated) in v15.7 and removed in v16.0. Now, `projects/:id/ci/lint` is used instead. You can specify the project ID using `--project-id|-P` option or `CI_PROJECT_ID` environment variable (predefined in Gitlab CI)
+- It uses the url of the remote `origin` to guess the url of the Gitlab to use, and the project path (also works if the remote is ssh, as soon as the Gitlab respond on HTTP using the same FQDN as ssh)
+- If the `projects/:project_path_or_id/ci/lint` API is not publicly accessible (e.g. 2FA is enforced), you can specify a personal access token using `--personal-access-token|-p` option or `GCL_PERSONAL_ACCESS_TOKEN` environment variable. The token must have `api` scope. 
+- Original `/ci/lint` API endpoint was [deprecated](https://docs.gitlab.com/ee/update/deprecations.html?removal_milestone=16.0#post-cilint-api-endpoint-deprecated) in v15.7 and removed in v16.0. Now, `projects/:project_path_or_id/ci/lint` is used instead. 
+  The tool will try by default to guess the project path from your remote, but you can specify:
+  - The project PATH using `--project-path|-P` option or `CI_PROJECT_ID` environment variable (predefined in Gitlab CI).
+  - The project ID using `--project-id|-I` option or `CI_PROJECT_PATH` environment variable (predefined in Gitlab CI).
+  `--project-id` has precedence over `--project-path`.
 
 ## --help 
 
@@ -134,19 +139,30 @@ Option's value on the command line have precedence over environment variables.
 Usage:
    gitlab-ci-linter [global options] [command [command options]] [PATH]
 
+   The used Gitlab API is tied to a Gitlab project. Thus, the tools needs to know which Gitlab project (on which Gitlab instance) it has to target.
+   By default, it will try to autodetect from the 'origin' remote configured in the git repository (if any), by extracting the FQDN as the root URL,
+   and the project path. Works for 'http'' or 'ssh' remotes. e.g.: a remote "https://gitlab.com/orobardet/gitlab-ci-linter.git" or
+   "git@gitlab.com:orobardet/gitlab-ci-linter.git" will target the API of the project "orobardet/gitlab-ci-linter" on "https://gitlab.com".
+
+   In case the auto-detection does not work, or you don't have a compatible remote, or you want to target another project, you can specify the Gitlab
+   root URL using '-gitlab-url|-u' flag, and the project using '--project-path|-P' or '--project-id|-I' flags. '--project-id' has precedence over '--project-path'.
+
+   If your gitlab instance or project needs an authentification (which is the case on gitlab.com), you have to specify a personal access token with '--personal-access-token|-p'.
+
 Global options:
    --gitlab-url URL, -u URL             root URL of the Gitlab instance to use API (default: auto-detect from remote origin, else "https://gitlab.com") [$GCL_GITLAB_URL]
    --ci-file FILE, -f FILE              FILE is the relative or absolute path to the gitlab-ci file [$GCL_GITLAB_CI_FILE]
    --directory DIR, -d DIR              DIR is the directory from where to search for gitlab-ci file and git repository (default: ".") [$GCL_DIRECTORY]
    --personal-access-token TOK, -p TOK  personal access token TOK for accessing repositories when you have 2FA enabled [$GCL_PERSONAL_ACCESS_TOKEN]
-   --project-id ID, -P ID               ID of the GitLab project that is used in the API for Gitlab >=13.6 [$CI_PROJECT_ID]
-   --timeout value, -t value            timeout in second after which http request to Gitlab API will timeout (and the program will fails) (default: 5) [$GCL_TIMEOUT]
+   --project-path PATH, -P PATH         PATH of the GitLab project that is used in the API for Gitlab >=13.6. Has precedence over path guessing from remote [$CI_PROJECT_PATH, $GCL_PROJECT_PATH]
+   --project-id ID, -I ID               ID of the GitLab project that is used in the API for Gitlab >=13.6. Has precedence over --project-path [$CI_PROJECT_ID, $GCL_PROJECT_ID]
+   --timeout value, -t value            timeout in second after which http request to Gitlab API will timeout (and the program will fails) (default: 15) [$GCL_TIMEOUT]
    --no-color, -n                       don't color output. By defaults the output is colorized if a compatible terminal is detected. (default: false) [$GCL_NOCOLOR]
    --verbose, -v                        verbose mode (default: false) [$GCL_VERBOSE]
    --merged-yaml, -m                    include merged yaml in response (default: false) [$GCL_INCLUDE_MERGED_YAML]
-   --help, -h                           show help (default: false)
+   --help, -h                           show help
    --version                            print the version information (default: false)
-   
+
 Arguments:
    If PATH if given, it will depending of its type on filesystem:
     - if a file, it will be used as the gitlab-ci file to check (similar to global --ci-file option)
