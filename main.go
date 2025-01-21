@@ -48,6 +48,12 @@ var directoryRoot string
 // Personal access token for accessing the repository when you have two factor authentication (2FA) enabled.
 var personalAccessToken string
 
+// Try to get personal access token as 'account' from .netrc file
+var useNetrc bool
+
+// Path of .netrc file to use
+var netrcFile string
+
 // The project path (namespace + name) of the GitLab project that is used in the API endpoint to validate the CI configuration.
 var projectPath string
 
@@ -107,6 +113,12 @@ Usage:
    root URL using '-gitlab-url|-u' flag, and the project using '--project-path|-P' or '--project-id|-I' flags. '--project-id' has precedence over '--project-path'.
 
    If your gitlab instance or project needs an authentification (which is the case on gitlab.com), you have to specify a personal access token with '--personal-access-token|-p'.
+   You can also use the flag '--netrc|-n' to try getting the token from the .netrc file (by default ~/.netrc on *nix, $HOME/_netrc on Windows), but not the token must be set
+   on the 'account' field, not 'password' (to prevent conflict with basic auth). Also, the 'default' entry of .netrc is ignored.
+   e.g.: for gitlab.com, the .netrc entry should be:
+      machine gitlab.com
+        # possible login and password definition
+        account MY_PERSONAL_ACCESS_TOKEN
 
 {{if .VisibleFlags}}Global options:
    {{range .VisibleFlags}}{{.}}
@@ -164,9 +176,23 @@ Usage:
 			Name:        "personal-access-token",
 			Aliases:     []string{"p"},
 			Value:       "",
-			Usage:       "personal access token `TOK` for accessing repositories when you have 2FA enabled",
+			Usage:       "personal access token `TOK` for accessing repositories when you have 2FA enabled. Has precedence over .netrc usage",
 			EnvVars:     []string{"GCL_PERSONAL_ACCESS_TOKEN"},
 			Destination: &personalAccessToken,
+		},
+		&cli.BoolFlag{
+			Name:        "netrc",
+			Aliases:     []string{"n"},
+			Usage:       "Try to get personal access token as 'account' from .netrc file",
+			EnvVars:     []string{"GCL_NETRC"},
+			Destination: &useNetrc,
+		},
+		&cli.StringFlag{
+			Name:        "netrc-file",
+			Value:       "",
+			Usage:       "Path of .netrc file to use. By default, try to detect it.",
+			EnvVars:     []string{"GCL_NETRC_FILE"},
+			Destination: &netrcFile,
 		},
 		&cli.StringFlag{
 			Name:        "project-path",
@@ -194,7 +220,6 @@ Usage:
 		},
 		&cli.BoolFlag{
 			Name:    "no-color",
-			Aliases: []string{"n"},
 			Usage:   "don't color output. By defaults the output is colorized if a compatible terminal is detected.",
 			EnvVars: []string{"GCL_NOCOLOR"},
 		},

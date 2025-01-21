@@ -3,8 +3,10 @@ module gitlab.com/orobardet/gitlab-ci-linter
 go 1.23.4
 
 require (
+	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d
 	github.com/fatih/color v1.18.0
 	github.com/go-ini/ini v1.67.0
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v2 v2.27.5
 )

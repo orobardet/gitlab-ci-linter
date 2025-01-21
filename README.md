@@ -48,6 +48,33 @@ rm .git/hooks/pre-commit
 gitlab-ci-linter install
 ```  
 
+# Quick start
+
+Once installed.
+
+## Setup
+
+To do once per computer/environment you install the tool.
+
+1. Generate a new [personal access token on your Gitlab.com account](https://gitlab.com/-/user_settings/personal_access_tokens), with `api` scope.  
+   Then edit your `~/.netrc` (if you are creating it, **don't forget to make it only readable and writable by _you_ and no one else**), and add:
+   ```shell
+   machine gitlab.com account <YOUR_PERSONAL_ACCESS_TOKEN>
+   ```
+   You only need to this the first time you 
+2. Add `export GCL_NETRC=1` to your environment (`.bashrc`, `.zshrc`, powershell profile...) and restart your shell.
+3. Optionally, repeat step 1 for any private Gitlab instance you may use.
+
+## Use
+ 
+1. `cd` to a git repository having gitlab.com as origin remote (with https or ssh).
+2. Run `gitlab-ci-lint` to check the validity of your `.gitlab-ci-lint`
+3. Optionally, run `gitlab-ci-lint install` to install it as a pre-commit hook: git will launch the check each time you commit things.
+
+## Tips
+
+Declare an alias `gcl` in your shell to invoke the tool even quicker.
+
 # Usage
 
 Once installed, it can be used as a simple standalone program, by launching it from any directory 
@@ -105,7 +132,7 @@ Self uninstall will only works if `.git/hooks/pre-commit` is a link to itself.
 If you are already using a pre-commit hook, you'll have to install manually: simply add a call to the tool in your 
 existing pre-commit script.
 
-### Integration with the pre-commit project
+### Integration with the `pre-commit` project
 
 There is also native support for using gitlab-ci-linter as a pre-commit-hook in
 the [pre-commit project](https://pre-commit.com/). If you're using pre-commit,
@@ -118,12 +145,23 @@ include this tool in your `.pre-commit-config.yaml` like this:
       - id: gitlab-ci-linter
 ```
 
+Note: this supposes you have a working Go toolchain in a valid version.
+
 ## Things to know
 
 - If no `.gitlab-ci.yml` is detected in the git repository root, the tool does nothing (if installed as pre-commit hook, it will not prevent the commit).
-- This tool works (or should) with any instance of Gitlab: gitlab.com or custom instance.
+- This tool works (or should) with any instance of Gitlab: gitlab.com or private instance.
 - It uses the url of the remote `origin` to guess the url of the Gitlab to use, and the project path (also works if the remote is ssh, as soon as the Gitlab respond on HTTP using the same FQDN as ssh)
-- If the `projects/:project_path_or_id/ci/lint` API is not publicly accessible (e.g. 2FA is enforced), you can specify a personal access token using `--personal-access-token|-p` option or `GCL_PERSONAL_ACCESS_TOKEN` environment variable. The token must have `api` scope. 
+- If the `projects/:project_path_or_id/ci/lint` API is not publicly accessible (or 2FA is enforced), you can specify a personal access token using `--personal-access-token|-p` option or `GCL_PERSONAL_ACCESS_TOKEN` environment variable. The token must have the `api` scope.
+- You can also use the flag `--netrc|-n` to try getting the token from the [`.netrc` file](https://www.gnu.org/software/inetutils/manual/html_node/The-_002enetrc-file.html) (by default `~/.netrc` on *nix, `$HOME/_netrc` on Windows), but not the token must be set
+   on the `account` field, not `password` (to prevent conflict with basic auth). `login` is not used.
+   e.g.: for gitlab.com, the .netrc entry should be:
+   ```shell
+   machine gitlab.com
+        # possible login and password definition
+        account MY_PERSONAL_ACCESS_TOKEN
+   ```
+  Also, the `default` entry of .netrc is _ignored_.
 - Original `/ci/lint` API endpoint was [deprecated](https://docs.gitlab.com/ee/update/deprecations.html?removal_milestone=16.0#post-cilint-api-endpoint-deprecated) in v15.7 and removed in v16.0. Now, `projects/:project_path_or_id/ci/lint` is used instead. 
   The tool will try by default to guess the project path from your remote, but you can specify:
   - The project PATH using `--project-path|-P` option or `CI_PROJECT_ID` environment variable (predefined in Gitlab CI).
@@ -132,7 +170,7 @@ include this tool in your `.pre-commit-config.yaml` like this:
 
 ## --help 
 
-A bunch of options are available to configure the binary. All options can be also set using environment variables.  
+A bunch of options are available to configure the tool. All options can be also set using environment variables.  
 Option's value on the command line have precedence over environment variables. 
 
 ```
@@ -148,16 +186,24 @@ Usage:
    root URL using '-gitlab-url|-u' flag, and the project using '--project-path|-P' or '--project-id|-I' flags. '--project-id' has precedence over '--project-path'.
 
    If your gitlab instance or project needs an authentification (which is the case on gitlab.com), you have to specify a personal access token with '--personal-access-token|-p'.
+   You can also use the flag '--netrc|-n' to try getting the token from the .netrc file (by default ~/.netrc on *nix, $HOME/_netrc on Windows), but not the token must be set
+   on the 'account' field, not 'password' (to prevent conflict with basic auth). Also, the 'default' entry of .netrc is ignored.
+   e.g.: for gitlab.com, the .netrc entry should be:
+      machine gitlab.com
+        # possible login and password definition
+        account MY_PERSONAL_ACCESS_TOKEN
 
 Global options:
    --gitlab-url URL, -u URL             root URL of the Gitlab instance to use API (default: auto-detect from remote origin, else "https://gitlab.com") [$GCL_GITLAB_URL]
    --ci-file FILE, -f FILE              FILE is the relative or absolute path to the gitlab-ci file [$GCL_GITLAB_CI_FILE]
    --directory DIR, -d DIR              DIR is the directory from where to search for gitlab-ci file and git repository (default: ".") [$GCL_DIRECTORY]
-   --personal-access-token TOK, -p TOK  personal access token TOK for accessing repositories when you have 2FA enabled [$GCL_PERSONAL_ACCESS_TOKEN]
+   --personal-access-token TOK, -p TOK  personal access token TOK for accessing repositories when you have 2FA enabled. Has precedence over .netrc usage [$GCL_PERSONAL_ACCESS_TOKEN]
+   --netrc, -n                          Try to get personal access token as 'account' from .netrc file (default: false) [$GCL_NETRC]
+   --netrc-file value                   Path of .netrc file to use. By default, try to detect it. [$GCL_NETRC_FILE]
    --project-path PATH, -P PATH         PATH of the GitLab project that is used in the API for Gitlab >=13.6. Has precedence over path guessing from remote [$CI_PROJECT_PATH, $GCL_PROJECT_PATH]
    --project-id ID, -I ID               ID of the GitLab project that is used in the API for Gitlab >=13.6. Has precedence over --project-path [$CI_PROJECT_ID, $GCL_PROJECT_ID]
    --timeout value, -t value            timeout in second after which http request to Gitlab API will timeout (and the program will fails) (default: 15) [$GCL_TIMEOUT]
-   --no-color, -n                       don't color output. By defaults the output is colorized if a compatible terminal is detected. (default: false) [$GCL_NOCOLOR]
+   --no-color                           don't color output. By defaults the output is colorized if a compatible terminal is detected. (default: false) [$GCL_NOCOLOR]
    --verbose, -v                        verbose mode (default: false) [$GCL_VERBOSE]
    --merged-yaml, -m                    include merged yaml in response (default: false) [$GCL_INCLUDE_MERGED_YAML]
    --help, -h                           show help
@@ -246,15 +292,15 @@ As I may not have a lot of time to implement propositions, the best way to have 
 
 # Development
 
-## Get the package
+## Clone the package
 
 ```shell
-go get gitlab.com/orobardet/gitlab-ci-linter
+git clokd git@gitlab.com:orobardet/gitlab-ci-linter
 ```
 
 ## Dependencies and module
 
-This software uses go module to handle dependencies. Just ensure to use a 
+This software uses go module to handle dependencies. Just ensure to use a recent and compatible version of Go (see go.mod for exact version needed).
 
 ## Compilation
 
@@ -266,21 +312,14 @@ make
 
 The Makefile accept the following targets (but not limited to):
 
+- `setup`: install some Go tooling (goreleaser, golangci-lint, ...)
 - `build`
 - `clean` 
 - `test`: runs tests with code coverage
 - `html-cover`: generate an html report of tests coverage
 - `check`: runs some checks (fmt, vet, lint, security, cyclo, ...)
 - `rebuild`: force the rebuild from scratch (simply runs `clean` followed by `build`)
-- `install`: launch `go install`
-- `run`: run the program, after building it, if needed. Arguments for the program can be passed after the `run target` 
-or using the `RUNARGS` environment variable.
-
-```shell
-# The following commands are equivalent:
-make run -v check
-RUNARGS="-v check" make run
-``` 
+- `release-snapshot`: launch goreleaser for a local release: builds all binaries and packages in `.build/dist/`
 
 The Makefile also accept the following environment variables:
 
@@ -291,3 +330,14 @@ The Makefile also accept the following environment variables:
 - `DEBUG`: binaries a build without debug symbols to reduce their size (`-s -w` link options) ; setting `DEBUG` to a non-zero value (0 by default) will build binary with debug symbols
 
 Other targets exists, look directly in the [Makefile](Makefile)'s comments. 
+
+## Dev workflow
+
+- Change the code
+- Run with:
+```shell
+# The following commands are equivalent:
+go run . [--some-gitlab-ci-linter-options or arguments]
+``` 
+
+Once you are happy with your changes, and before commiting/pushing something, check the code quality and run tests with `make checks`.

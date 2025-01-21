@@ -78,7 +78,7 @@ func findGitlabCiFile(directory string) (string, error) {
 	return findGitlabCiFile(filepath.Dir(directory))
 }
 
-func initGitlabHTTPClientRequest(method string, url string, content string) (*http.Client, *http.Request, error) {
+func initGitlabHTTPClientRequest(method string, gitlabURL string, content string) (*http.Client, *http.Request, error) {
 	var httpClient *http.Client
 	var req *http.Request
 
@@ -98,7 +98,7 @@ func initGitlabHTTPClientRequest(method string, url string, content string) (*ht
 		Timeout: time.Second * time.Duration(httpRequestTimeout),
 	}
 
-	req, err := http.NewRequest(method, url, strings.NewReader(content))
+	req, err := http.NewRequest(method, gitlabURL, strings.NewReader(content))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -107,6 +107,23 @@ func initGitlabHTTPClientRequest(method string, url string, content string) (*ht
 	req.Header.Add("User-Agent", fmt.Sprintf("%s/%s", config.APPNAME, config.VERSION))
 	if personalAccessToken != "" {
 		req.Header.Add("PRIVATE-TOKEN", personalAccessToken)
+	} else if useNetrc {
+		// Check if we can find a token in .netrc
+		if verboseMode {
+			fmt.Println("Checking .netrc for token...")
+		}
+		token, err := getGitlabTokenFromNetrc(gitlabURL)
+
+		if err != nil {
+			return nil, nil, err
+		} else if token != "" {
+			if verboseMode {
+				fmt.Println("Token found in .netrc")
+			}
+			req.Header.Add("PRIVATE-TOKEN", token)
+		} else {
+			fmt.Println("No token found in .netrc")
+		}
 	}
 
 	return httpClient, req, nil
