@@ -6,6 +6,7 @@
 - Added a `--project-path` option
 - Added a `--merged-yaml` option to allow merged yaml to be returned in response from gitlab API
 - Improve Gitlab API HTTP error code handling
+- Publish release on Cloudsmith
 - Upgrade to Go 1.23
 - Use Goreleaser
 - Bugfixes

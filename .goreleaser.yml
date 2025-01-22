@@ -36,20 +36,20 @@ archives:
   - id: binaries-gitlab-ci-linter
     builds:
       - gitlab-ci-linter
-    format: binary
+    formats:
+      - binary
 nfpms:
   - id: debian-gitlab-ci-linter
     package_name: gitlab-ci-linter
     builds:
       - gitlab-ci-linter
     formats:
-      - apk
       - deb
-      - rpm
     vendor: Olivier Robardet
     maintainer: Olivier Robardet
     homepage: https://gitlab.com/orobardet/gitlab-ci-linter
     description: .gitlab-ci.yml linter, using online Gitlab lint API (gitlab.com or self-hosted)
+    license: MIT
     deb:
       lintian_overrides:
         - statically-linked-binary
@@ -58,6 +58,45 @@ nfpms:
         - no-copyright-file
         - no-manual-page
         - unknown-section
+  - id: rpm-gitlab-ci-linter
+    package_name: gitlab-ci-linter
+    builds:
+      - gitlab-ci-linter
+    formats:
+      - rpm
+    vendor: Olivier Robardet
+    maintainer: Olivier Robardet
+    homepage: https://gitlab.com/orobardet/gitlab-ci-linter
+    description: .gitlab-ci.yml linter, using online Gitlab lint API (gitlab.com or self-hosted)
+  - id: apk-gitlab-ci-linter
+    package_name: gitlab-ci-linter
+    builds:
+      - gitlab-ci-linter
+    formats:
+      - apk
+    vendor: Olivier Robardet
+    maintainer: Olivier Robardet
+    homepage: https://gitlab.com/orobardet/gitlab-ci-linter
+    description: .gitlab-ci.yml linter, using online Gitlab lint API (gitlab.com or self-hosted)
+publishers:
+  - name: debian-cloudsmith
+    ids:
+      - debian-gitlab-ci-linter
+    cmd: cloudsmith push deb --republish orobardet/gitlab-ci-linter/any-distro/any-version "{{ .ArtifactPath }}"
+    env:
+      - CLOUDSMITH_API_KEY={{ .Env.CLOUDSMITH_API_KEY }}
+  - name: rpm-cloudsmith
+    ids:
+      - rpm-gitlab-ci-linter
+    cmd: cloudsmith push rpm --republish orobardet/gitlab-ci-linter/any-distro/any-version "{{ .ArtifactPath }}"
+    env:
+      - CLOUDSMITH_API_KEY={{ .Env.CLOUDSMITH_API_KEY }}
+  - name: apk-cloudsmith
+    ids:
+      - apk-gitlab-ci-linter
+    cmd: cloudsmith push alpine --republish orobardet/gitlab-ci-linter/alpine/any-version "{{ .ArtifactPath }}"
+    env:
+      - CLOUDSMITH_API_KEY={{ .Env.CLOUDSMITH_API_KEY }}
 checksum:
   name_template: 'checksums.txt'
   disable: false
