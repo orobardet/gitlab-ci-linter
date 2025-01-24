@@ -63,8 +63,16 @@ dev build:
   image:
     name: goreleaser/goreleaser
     entrypoint: [""]
+  services:
+    - docker:dind
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_HOST: tcp://docker:2375
   rules:
     - if: $CI_COMMIT_BRANCH
+  before_script:
+    - apk add --update docker-cli
   script:
     - goreleaser release --clean --snapshot --skip=publish
   artifacts:
@@ -77,14 +85,19 @@ release:
   image:
     name: goreleaser/goreleaser
     entrypoint: [""]
-  rules:
-    - if: $CI_COMMIT_TAG && '$CI_COMMIT_TAG =~ /^v\d+.\d+.\d+$/'
+  services:
+    - docker:dind
   variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_HOST: tcp://docker:2375
     # Disable shallow cloning so that goreleaser can diff between tags to
     # generate a changelog.
     GIT_DEPTH: 0
+  rules:
+    - if: $CI_COMMIT_TAG && '$CI_COMMIT_TAG =~ /^v\d+.\d+.\d+$/'
   before_script:
-    - apk add --update py3-pip jq
+    - apk add --update py3-pip jq docker-cli
     - pip install --upgrade --break-system-packages cloudsmith-cli
   script:
     - goreleaser release --clean

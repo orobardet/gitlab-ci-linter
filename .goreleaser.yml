@@ -78,6 +78,12 @@ nfpms:
     maintainer: Olivier Robardet
     homepage: https://gitlab.com/orobardet/gitlab-ci-linter
     description: .gitlab-ci.yml linter, using online Gitlab lint API (gitlab.com or self-hosted)
+dockers:
+  - image_templates:
+      - "orobardet/gitlab-ci-linter:latest"
+      - "orobardet/gitlab-ci-linter:{{ .Version }}"
+      - "orobardet/gitlab-ci-linter:{{ .Major }}"
+      - "orobardet/gitlab-ci-linter:{{ .Major }}.{{ .Minor }}"
 publishers:
   - name: debian-cloudsmith
     ids:
