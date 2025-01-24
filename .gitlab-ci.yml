@@ -99,6 +99,7 @@ release:
   before_script:
     - apk add --update py3-pip jq docker-cli
     - pip install --upgrade --break-system-packages cloudsmith-cli
+    - echo "$DOCKER_HUB_TOKEN" | docker login --username $DOCKER_HUB_USER --password-stdin
   script:
     - goreleaser release --clean
     # Uploading RAW artifacts on cloudsmith is done sequentially outside Goreleaser, as it seems there is some bug

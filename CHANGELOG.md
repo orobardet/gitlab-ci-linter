@@ -7,6 +7,7 @@
 - Added a `--merged-yaml` option to allow merged yaml to be returned in response from gitlab API
 - Improve Gitlab API HTTP error code handling
 - Publish release on Cloudsmith
+- Build and publish a Docker image on Docker Hub
 - Upgrade to Go 1.23
 - Use Goreleaser
 - Bugfixes
