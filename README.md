@@ -9,19 +9,66 @@ It can be installed as a git pre-commit hook, preventing commit (and so push) of
 
 # Installation
 
-**Download the tool from the [releases page](https://gitlab.com/orobardet/gitlab-ci-linter/-/releases).**
+You can download the tool from the [releases page](https://gitlab.com/orobardet/gitlab-ci-linter/-/releases) or from [Cloudsmith](https://cloudsmith.io/~orobardet/repos/gitlab-ci-linter/packages/).
 
-The tool is made in [Go](https://golang.org/). So it's cross platform and can be run in Linux, Windows, Mac or any other 
+## Linux repositories
+
+### Debian based
+
+```shell
+curl -1sLf \
+  'https://dl.cloudsmith.io/public/orobardet/gitlab-ci-linter/setup.deb.sh' \
+  | sudo -E bash
+```
+
+or see manual or alternative instructions on Cloudsmith: https://cloudsmith.io/~orobardet/repos/gitlab-ci-linter/setup/#formats-deb
+
+### RPM based
+
+```shell
+curl -1sLf \
+  'https://dl.cloudsmith.io/public/orobardet/gitlab-ci-linter/setup.rpm.sh' \
+  | sudo -E bash
+```
+
+or see manual or alternative instructions on Cloudsmith: https://cloudsmith.io/~orobardet/repos/gitlab-ci-linter/setup/#formats-rpm
+
+### Alpine
+
+```shell
+sudo apk add --no-cache bash
+curl -1sLf \
+  'https://dl.cloudsmith.io/public/orobardet/gitlab-ci-linter/setup.alpine.sh' \
+  | sudo -E bash
+```
+
+or see manual or alternative instructions on Cloudsmith: https://cloudsmith.io/~orobardet/repos/gitlab-ci-linter/setup/#formats-alpine
+
+## Binaries
+
+The tool is made in [Go](https://golang.org/). So it's cross-platform and can be run in Linux, Windows, Mac or any other
 operating system supported by Go.
-
-It is currently tested on Linux x64 (Ubuntu, WSL) and Windows x64 (7 and 10). 
 
 To install, just [download the binary](https://gitlab.com/orobardet/gitlab-ci-linter/-/releases) matching you system and put it somewhere (preferably in your `$PATH`).  
 Upgrade is just overriding the binary with a new one.
+ 
+The following binary versions are available:
 
-> For now, releases only build binaries for some common platforms, not all supported by Go.  
-> If yours is not available, you can try building it by yourself and check if it works (it should, but never tested).  
-> Feedbacks are welcome :)
+- [Windows x64](https://dl.cloudsmith.io/public/orobardet/gitlab-ci-linter/raw/names/gitlab-ci-linter_windows_amd64/versions/2.3.0/gitlab-ci-linter.exe)
+- [Windows x86](https://dl.cloudsmith.io/public/orobardet/gitlab-ci-linter/raw/names/gitlab-ci-linter_windows_386/versions/2.3.0/gitlab-ci-linter.exe)
+- [Windows ARM64](https://dl.cloudsmith.io/public/orobardet/gitlab-ci-linter/raw/names/gitlab-ci-linter_windows_arm64/versions/2.3.0/gitlab-ci-linter.exe)
+- [Linux x64](https://dl.cloudsmith.io/public/orobardet/gitlab-ci-linter/raw/names/gitlab-ci-linter_linux_amd64/versions/2.3.0/gitlab-ci-linter)
+- [Linux x86](https://dl.cloudsmith.io/public/orobardet/gitlab-ci-linter/raw/names/gitlab-ci-linter_linux_386/versions/2.3.0/gitlab-ci-linter)
+- [Linux ARM64](https://dl.cloudsmith.io/public/orobardet/gitlab-ci-linter/raw/names/gitlab-ci-linter_linux_arm64/versions/2.3.0/gitlab-ci-linter)
+- [Linux ARM](https://dl.cloudsmith.io/public/orobardet/gitlab-ci-linter/raw/names/gitlab-ci-linter_linux_arm/versions/2.3.0/gitlab-ci-linter)
+- [Mac ARM64 (Apple silicon)](https://dl.cloudsmith.io/public/orobardet/gitlab-ci-linter/raw/names/gitlab-ci-linter_darwin_arm64/versions/2.3.0/gitlab-ci-linter)
+- [Mac x64](https://dl.cloudsmith.io/public/orobardet/gitlab-ci-linter/raw/names/gitlab-ci-linter_darwin_amd64/versions/2.3.0/gitlab-ci-linter)
+
+## Docker
+
+```shell
+docker pull orobardet/gitlab-ci-linter
+```
 
 ## Requirements
 
@@ -32,25 +79,9 @@ You don't even need a Git client.
 The only thing required is a network connection to the Gitlab instance you are using in the repository you want to check.    
 And a git repository to check of course, having an `origin` remote corresponding to a Gitlab instance and a `.gitlab-ci.yml` file. 
 
-## Migrating from old bash script version
-
-If you don't want to/can't update your existing repositories with a pre-commit hook to the old bash script, the best 
-way is to replace the script with a symlink to the new binary. It's a drop-in replacement.
-
-But it would be better to remove (manually) the previous pre-commit hook link, and then install the new go version:
-
-```shell
-# check if the current pre-commit hook is a link to the old bash script
-ls -lsa .git/hooks/pre-commit
-# if so, remove it
-rm .git/hooks/pre-commit
-# and then install the new version normally
-gitlab-ci-linter install
-```  
-
 # Quick start
 
-Once installed.
+Once installed (look above).
 
 ## Setup
 
@@ -70,6 +101,13 @@ To do once per computer/environment you install the tool.
 1. `cd` to a git repository having gitlab.com as origin remote (with https or ssh).
 2. Run `gitlab-ci-lint` to check the validity of your `.gitlab-ci-lint`
 3. Optionally, run `gitlab-ci-lint install` to install it as a pre-commit hook: git will launch the check each time you commit things.
+
+As a docker container, from your repository root:
+
+```shell
+docker run --rm -it -e "GCL_PERSONAL_ACCESS_TOKEN=<YOUR_PERSONAL_ACCESS_TOKEN>" -v $(PWD):/src -w /src orobardet/gitlab-ci-linter
+```
+
 
 ## Tips
 
