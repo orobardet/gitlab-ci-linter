@@ -5,6 +5,8 @@
 - Guess project path, and use it in the API URL.
 - Added a `--project-path` option
 - Added a `--merged-yaml` option to allow merged yaml to be returned in response from gitlab API
+- Added a `--dry-run` option to run pipeline creation simulation
+- Added a `--dry-run-ref` option to choose trigger ref when dry run
 - Improve Gitlab API HTTP error code handling
 - Publish release on Cloudsmith
 - Build and publish a Docker image on Docker Hub

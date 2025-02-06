@@ -23,6 +23,7 @@ package main
 import (
 	"errors"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -107,4 +108,14 @@ func parseGitRemoteURL(remoteURL string) (string, string) {
 	}
 
 	return "", ""
+}
+
+// GetCurrentBranch returns the current branch name of the git repository
+func GetCurrentBranch() (string, error) {
+	cmd := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(output)), nil
 }
