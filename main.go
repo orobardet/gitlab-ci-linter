@@ -73,6 +73,12 @@ var verboseMode = false
 // Tells if the response should include the merged yaml from the Gitlab API
 var includeMergedYaml = false
 
+// Tells if run pipeline creation simulation
+var dryRun = false
+
+// When dry_run is true, sets the branch or tag context to use to validate the CI/CD YAML configuration. Defaults to the project’s default branch when not set.
+var dryRunRef string
+
 // Analyse a PATH argument, that can be a directory or file, to use it as a gitlab-ci file a a directory
 // where to start searching
 func processPathArgument(path string) {
@@ -236,6 +242,19 @@ Usage:
 			Usage:       "include merged yaml in response",
 			EnvVars:     []string{"GCL_INCLUDE_MERGED_YAML"},
 			Destination: &includeMergedYaml,
+		},
+		&cli.BoolFlag{
+			Name:        "dry-run",
+			Aliases:     []string{"s"},
+			Usage:       "run pipeline creation simulation",
+			EnvVars:     []string{"GCL_DRY_RUN"},
+			Destination: &dryRun,
+		},
+		&cli.StringFlag{
+			Name:        "dry-run-ref",
+			Usage:       "When dry_run is true, sets the branch or tag to validate ci yml",
+			EnvVars:     []string{"GCL_DRY_RUN_REF"},
+			Destination: &dryRunRef,
 		},
 	}
 	cli.VersionFlag = &cli.BoolFlag{
