@@ -1,5 +1,7 @@
 # vNext
 
+# v2.3.0
+
 - Switch from deprecated v3 Gitlab API to v4. Thanks @SfinxNT (!20)
 - Add support of .netrc file to get personal access token, under new `--netrc|-n` option. Allows to use multiple Gitlab instances with auth in a same dev environment
 - Guess project path, and use it in the API URL.
