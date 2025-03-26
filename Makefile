@@ -86,16 +86,6 @@ PACKAGEPATHS:=$(shell go list -f "{{.Dir}}" ./...)
 .PHONY: all
 all: build
 
-.PHONY: GORELEASER-exists GOLANGCI_LINT-exists
-
-GORELEASER-exists:
-	@command -v goreleaser 2>&2 > /dev/null || (/bin/echo >&2 -e "\n\x1b[1m\x1b[31mNo goreleaser binary found, please install it with 'make setup' (or see https://goreleaser.com/)\x1b[0m" ; exit 1)
-	$(eval GORELEASER:=$(shell command -v goreleaser 2> /dev/null))
-
-GOLANGCI_LINT-exists:
-	@command -v golangci-lint 2>&2 > /dev/null || (/bin/echo >&2 -e "\n\x1b[1m\x1b[31mNo golangci-lint binary found, please install it with 'make setup' (or see https://golangci-lint.run/welcome/install/)\x1b[0m" ; exit 1)
-	$(eval GOLANGCI_LINT:=$(shell command -v golangci-lint 2> /dev/null))
-
 build: $(BINARY)
 
 .PHONY: release
@@ -106,9 +96,6 @@ rebuild: clean build
 
 .PHONY: setup
 setup:
-	cd $(GOPATH)
-	go install github.com/goreleaser/goreleaser@latest
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
 .PHONY: imports
 imports:
@@ -123,8 +110,8 @@ check: lint test
 checks: check
 
 .PHONY: lint
-lint: GOLANGCI_LINT-exists $(SOURCES)
-	$(GOLANGCI_LINT) run
+lint:  $(SOURCES)
+	go tool golangci-lint run
 
 .PHONY: run
 run: $(BINARY)
@@ -175,5 +162,5 @@ godoc: _godoc_binary
 	ci/make-godoc.sh
 
 .PHONY: release-snapshot
-release-snapshot: GORELEASER-exists
-	$(GORELEASER) release --clean --snapshot --skip=publish
+release-snapshot:
+	go tool goreleaser release --clean --snapshot --skip=publish

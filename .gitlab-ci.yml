@@ -8,24 +8,24 @@ variables:
   CGO_ENABLED: 0
   COVERAGEREPORTDIR: "_build/coverage"
 
+default:
+  image: golang:1.24
+
 ## -- Check stage -------------------------------------------------------------
 
 lint:
-  image: golangci/golangci-lint
   stage: checks
   script:
-    - golangci-lint run
+    - go tool golangci-lint run
 
 govulncheck:
-  image: golang:1.24
   stage: checks
   script:
-    - go install golang.org/x/vuln/cmd/govulncheck@latest
-    - govulncheck -show color ./...
+    - go mod tidy
+    - go tool govulncheck -show color ./...
 
 # A test job template, to make different test jobs by branch/tags
 .go test: &_go_test_template
-  image: golang:1.24
   stage: checks
   variables:
     GOTESTFLAGS: -v
