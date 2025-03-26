@@ -48,7 +48,7 @@ func getGitlabLintURL(gitRepoPath string) (string, error) {
 	// Extract origin remote url from repository config
 	remoteURL, err := getGitOriginRemoteURL(gitRepoPath)
 	if err != nil {
-		return defaultGitlabRootURL, fmt.Errorf("Failed to find origin remote url in repository: %s", err)
+		return defaultGitlabRootURL, fmt.Errorf("failed to find origin remote url in repository: %s", err)
 	}
 
 	// Check if we can use the origin remote url
@@ -56,7 +56,7 @@ func getGitlabLintURL(gitRepoPath string) (string, error) {
 		// Guess gitlab url based on remote url
 		localGitlabRootURL, err := guessGitlabAPIFromGitRemoteURL(remoteURL)
 		if err != nil {
-			return defaultGitlabRootURL, fmt.Errorf("No valid and responding Gitlab API URL found from repository's origin remote: %s", err)
+			return defaultGitlabRootURL, fmt.Errorf("no valid and responding Gitlab API URL found from repository's origin remote: %s", err)
 		}
 		return localGitlabRootURL, nil
 	}

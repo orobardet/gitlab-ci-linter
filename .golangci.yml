@@ -1,38 +1,54 @@
+version: "2"
+
 run:
   tests: false
 
-output:
-  sort-results: true
-  show-stats: true
-
-issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    gofmt:
+      simplify: true
+      rewrite-rules:
+        - pattern: interface{}
+          replacement: any
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 
 linters:
-  disable-all: true
+  default: none
   enable:
     - bodyclose
     - errcheck
     - errname
     - gocyclo
-    - gofmt
-    - goimports
     - gosec
-    - gosimple
     - govet
     - ineffassign
     - predeclared
     - revive
     - staticcheck
     - unused
+  settings:
+    gocyclo:
+      min-complexity: 15
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 
-linters-settings:
-  gocyclo:
-    min-complexity: 15
-
-  gofmt:
-    simplify: true
-    rewrite-rules:
-      - pattern: 'interface{}'
-        replacement: 'any'
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

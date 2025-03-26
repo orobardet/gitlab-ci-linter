@@ -143,7 +143,7 @@ func checkGitlabAPIUrl(rootURL string, lintURL string, apiCIEndpoint string) (st
 
 	httpClient, req, err := initGitlabHTTPClientRequest("GET", lintURL, "")
 	if err != nil {
-		return newLintURL, fmt.Errorf("Unable to create an HTTP client: %w", err)
+		return newLintURL, fmt.Errorf("unable to create an HTTP client: %w", err)
 	}
 
 	resp, err := httpClient.Do(req)
@@ -285,7 +285,7 @@ func guessGitlabAPIFromGitRemoteURL(remoteURL string) (lintURL string, err error
 			fmt.Printf("API url found: %s\n", lintURL)
 		}
 	} else {
-		return "", errors.New("Unknown error occurs")
+		return "", errors.New("unknown error occurs")
 	}
 
 	return
