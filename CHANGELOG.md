@@ -1,5 +1,7 @@
 # vNext
 
+- Bumps to Go 1.24.1
+
 # v2.3.0
 
 - Switch from deprecated v3 Gitlab API to v4. Thanks @SfinxNT (!20)
