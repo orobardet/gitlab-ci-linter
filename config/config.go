@@ -5,7 +5,7 @@ package config
 var APPNAME = "gitlab-ci-linter"
 
 // VERSION contains the version of the program
-var VERSION = "0.0.0-dev"
+var VERSION = "2.4.0-dev"
 
 // REVISION contains the revision of the program
 var REVISION = "HEAD"
