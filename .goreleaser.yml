@@ -34,14 +34,14 @@ builds:
       - -s -w -X {{.Env.MAIN_PACKAGE_PATH}}config.VERSION={{.Version}} -X {{.Env.MAIN_PACKAGE_PATH}}config.REVISION={{.FullCommit}} -X {{.Env.MAIN_PACKAGE_PATH}}config.BUILDTIME={{ time "2006-01-02T15:04:05-0700" }}
 archives:
   - id: binaries-gitlab-ci-linter
-    builds:
+    ids:
       - gitlab-ci-linter
     formats:
       - binary
 nfpms:
   - id: debian-gitlab-ci-linter
     package_name: gitlab-ci-linter
-    builds:
+    ids:
       - gitlab-ci-linter
     formats:
       - deb
@@ -60,7 +60,7 @@ nfpms:
         - unknown-section
   - id: rpm-gitlab-ci-linter
     package_name: gitlab-ci-linter
-    builds:
+    ids:
       - gitlab-ci-linter
     formats:
       - rpm
@@ -70,7 +70,7 @@ nfpms:
     description: .gitlab-ci.yml linter, using online Gitlab lint API (gitlab.com or self-hosted)
   - id: apk-gitlab-ci-linter
     package_name: gitlab-ci-linter
-    builds:
+    ids:
       - gitlab-ci-linter
     formats:
       - apk
