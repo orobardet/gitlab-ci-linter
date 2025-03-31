@@ -1,5 +1,7 @@
 # vNext
 
+- Added a `--dry-run` option to run pipeline creation simulation
+- Added a `--dry-run-ref` option to choose trigger ref when dry run
 - Bumps to Go 1.24.1
 
 # v2.3.0

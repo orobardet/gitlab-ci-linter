@@ -50,6 +50,8 @@ const gitlabAPICiLintPath = "/ci/lint"
 // GitlabAPILintRequest struct represents the JSON body of a request sent to the Gitlab API /ci/lint
 type GitlabAPILintRequest struct {
 	Content string `json:"content"`
+	DryRun  bool   `json:"dry_run"`
+	Ref     string `json:"ref"`
 }
 
 // GitlabAPILintResponse struct represents the JSON body of a response from the Gitlab API /ci/lint
@@ -189,7 +191,22 @@ func lintGitlabCIUsingAPI(lintURL string, ciFileContent string) (status bool, ms
 	// {
 	//   "content": "<ESCAPED CONTENT OF THE GITLAB-CI FILE>"
 	// }
-	var reqParams = GitlabAPILintRequest{Content: ciFileContent}
+	if dryRunRef == "" {
+		if dryRunRef == "" {
+			// Find git repository. First, start from gitlab-ci file location
+			gitRepoPath, err := findGitRepo(filepath.Dir(gitlabCiFilePath))
+			if err == nil {
+				// if not found, search from directoryRoot
+				gitRepoPath, _ = findGitRepo(directoryRoot)
+			}
+			dryRunRef, _ = GetCurrentBranch(gitRepoPath)
+		}
+	}
+	var reqParams = GitlabAPILintRequest{
+		Content: ciFileContent,
+		DryRun:  dryRun,
+		Ref:     dryRunRef,
+	}
 	reqBody, _ := json.Marshal(reqParams)
 
 	// Prepare requesting the API

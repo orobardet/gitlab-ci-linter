@@ -108,3 +108,19 @@ func parseGitRemoteURL(remoteURL string) (string, string) {
 
 	return "", ""
 }
+
+// GetCurrentBranch returns the current branch name of the git repository by reading the .git/HEAD file.
+// If the repository is in detached HEAD mode, it returns an empty string.
+func GetCurrentBranch(gitDirectory string) (string, error) {
+	headFilePath := filepath.Join(gitDirectory, "HEAD")
+	content, err := os.ReadFile(headFilePath)
+	if err != nil {
+		return "", err
+	}
+	headContent := strings.TrimSpace(string(content))
+	if strings.HasPrefix(headContent, "ref: refs/heads/") {
+		return strings.TrimPrefix(headContent, "ref: refs/heads/"), nil
+	}
+
+	return "", nil
+}
